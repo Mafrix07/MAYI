@@ -1,0 +1,17 @@
+Module 2: COUCHE DONNÉES - MODÈLES DJANGO (Total : 84 H)
+J'ai crée plusieurs app pour structurer le projet :
+- users : Gestion des utilisateurs (touristes, professionnels, support, admin)
+- services : Gestion des services (hotels, restaurants, guides, etc.)
+- reservations : Gestion des réservations
+- reviews : Gestion des avis
+- support : Gestion des tickets de support
+- core : Gestion des événements et notifications
+
+1. users
+Pour les modeles j'ai utilisé AbstractUser pour hériter des champs par défaut de Django (username, email, password, first_name, last_name) et j'ai ajouté des champs spécifiques comme role, telephone, date_de_naissance, etc.
+J'ai aussi crées des profils spécifiques pour certains rôles comme les professionnels et les touristes.
+
+2. services
+
+
+
