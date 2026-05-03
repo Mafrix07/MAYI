@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'rest_framework', # gestion des API REST
     'rest_framework_simplejwt', # gestion des tokens JWT
     'corsheaders', # gestion des CORS
+    'django_filters', # filtrage
+    'drf_spectacular', # documentation
     'core', #pour gérer les modèles 
     'dashboard', #pour gérer le dashboard administrateur
     'django.contrib.admin',
@@ -160,6 +162,25 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated', # Par défaut, tout est protégé
     ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MAYI – Togo Tourism API',
+    'DESCRIPTION': (
+        'API REST du projet MAYI – '
+        'application mobile de tourisme au Togo'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 SIMPLE_JWT = {

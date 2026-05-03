@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import InscriptionSerializer, UtilisateurSerializer, MyTokenObtainPairSerializer
+from .serializers import InscriptionSerializer, ProfilUtilisateurSerializer, MyTokenObtainPairSerializer
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -20,7 +20,7 @@ class InscriptionView(APIView):
             return Response({
                 "success": True,
                 "message": "Compte créé avec succès.",
-                "user": UtilisateurSerializer(user).data
+                "user": ProfilUtilisateurSerializer(user).data
             }, status=status.HTTP_201_CREATED)
         return Response({
             "success": False,
@@ -33,10 +33,10 @@ class MonProfilView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(UtilisateurSerializer(request.user).data)
+        return Response(ProfilUtilisateurSerializer(request.user).data)
 
     def patch(self, request):
-        serializer = UtilisateurSerializer(request.user, data=request.data, partial=True)
+        serializer = ProfilUtilisateurSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({

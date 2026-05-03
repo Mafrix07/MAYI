@@ -1,28 +1,63 @@
-from django_filters import rest_framework as filters
+# ============================================================
+# FICHIER : services/filters.py
+# DOMAINE : Filtrage du catalogue
+# RELATED_NAME UTILISÉ : avis
+# ============================================================
+
+import django_filters
 from django.db.models import Avg
 from .models import Service
 
-class ServiceFilter(filters.FilterSet):
+class ServiceFilter(django_filters.FilterSet):
     """
-    Filtres personnalisés pour la recherche de services.
-    Permet de filtrer par type, prix, adresse (localisation) et note moyenne.
+    Filtres pour le catalogue des services.
+    Permet de filtrer par type, localisation, prix et note.
     """
-    prix_min = filters.NumberFilter(field_name="prix", lookup_expr='gte')
-    prix_max = filters.NumberFilter(field_name="prix", lookup_expr='lte')
     
-    # On utilise 'adresse' pour la recherche de localisation (ville/quartier)
-    # car le champ 'localisation' n'est pas présent dans le modèle actuel.
-    localisation = filters.CharFilter(field_name="adresse", lookup_expr='icontains')
-    
-    note_min = filters.NumberFilter(method='filter_by_note_min')
+    # Filtre par type (HEBERGEMENT, SNACK, ACTIVITE, TRANSPORT)
+    type_service = django_filters.ChoiceFilter(
+        choices=Service.TypeService.choices
+    )
+
+    # Localisation (recherche partielle sur l'adresse)
+    localisation = django_filters.CharFilter(
+        field_name='adresse', 
+        lookup_expr='icontains',
+        label='Localisation (adresse)'
+    )
+
+    # Plage de prix
+    prix_min = django_filters.NumberFilter(
+        field_name='prix', 
+        lookup_expr='gte',
+        label='Prix minimum'
+    )
+    prix_max = django_filters.NumberFilter(
+        field_name='prix', 
+        lookup_expr='lte',
+        label='Prix maximum'
+    )
+
+    # Note moyenne minimale
+    note_min = django_filters.NumberFilter(
+        method='filter_note_min',
+        label='Note minimale (1-5)'
+    )
 
     class Meta:
         model = Service
-        fields = ['type_service', 'prix_min', 'prix_max', 'localisation']
+        fields = ['type_service', 'localisation', 'prix_min', 'prix_max', 'note_min']
 
-    def filter_by_note_min(self, queryset, name, value):
+    def filter_note_min(self, queryset, name, value):
         """
-        Filtre les services ayant une note moyenne supérieure ou égale à 'value'.
-        L'annotation est déjà faite dans le ViewSet, mais on s'assure de sa présence ici.
+        Filtre les services ayant une note moyenne supérieure ou égale à la valeur.
+        Utilise le related_name 'avis' défini dans reviews/models.py.
         """
-        return queryset.annotate(avg_rating=Avg('avis__note')).filter(avg_rating__gte=value)
+        return queryset.annotate(
+            note_moy=Avg('avis__note')
+        ).filter(note_moy__gte=value)
+
+# Résumé de fin de phase :
+# ✓ Créé : ServiceFilter
+# ✓ Importé depuis l'existant : Service
+# ✓ Reste à faire : Mettre à jour services/views.py pour utiliser ce filtre

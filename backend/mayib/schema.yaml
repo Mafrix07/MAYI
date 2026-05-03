@@ -1,0 +1,1504 @@
+openapi: 3.0.3
+info:
+  title: MAYI – Togo Tourism API
+  version: 1.0.0
+  description: API REST du projet MAYI – application mobile de tourisme au Togo
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MyTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MyTokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Gestion du profil utilisateur connecté
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: auth_me_partial_update
+      description: Gestion du profil utilisateur connecté
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Inscription de nouveaux utilisateurs (Touristes ou Pros)
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/avis/:
+    get:
+      operationId: avis_list
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - avis
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAvisList'
+          description: ''
+    post:
+      operationId: avis_create
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      tags:
+      - avis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avis'
+          description: ''
+  /api/avis/{id}/:
+    get:
+      operationId: avis_retrieve
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Avis.
+        required: true
+      tags:
+      - avis
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avis'
+          description: ''
+    put:
+      operationId: avis_update
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Avis.
+        required: true
+      tags:
+      - avis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AvisRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avis'
+          description: ''
+    patch:
+      operationId: avis_partial_update
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Avis.
+        required: true
+      tags:
+      - avis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAvisRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAvisRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAvisRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avis'
+          description: ''
+    delete:
+      operationId: avis_destroy
+      description: |-
+        ViewSet pour la gestion des avis sur les services.
+        Lecture publique, création réservée aux touristes, modification à l'auteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Avis.
+        required: true
+      tags:
+      - avis
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/evenements/:
+    get:
+      operationId: evenements_list
+      description: |-
+        ViewSet en lecture seule pour le calendrier des événements.
+        Accessible publiquement pour consultation.
+      parameters:
+      - in: query
+        name: est_actif
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_evenement
+        schema:
+          type: string
+          title: Type d'événement
+          enum:
+          - AUTRE
+          - CONCERT
+          - CULTUREL
+          - FESTIVAL
+          - GASTRONOMIE
+          - SPORTIF
+        description: |-
+          * `FESTIVAL` - Festival
+          * `CONCERT` - Concert
+          * `SPORTIF` - Événement sportif
+          * `CULTUREL` - Visite culturelle
+          * `GASTRONOMIE` - Gastronomie
+          * `AUTRE` - Autre
+      tags:
+      - evenements
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEvenementList'
+          description: ''
+  /api/evenements/{id}/:
+    get:
+      operationId: evenements_retrieve
+      description: |-
+        ViewSet en lecture seule pour le calendrier des événements.
+        Accessible publiquement pour consultation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Événement.
+        required: true
+      tags:
+      - evenements
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+          description: ''
+  /api/reservations/:
+    get:
+      operationId: reservations_list
+      description: |-
+        ViewSet pour la gestion des réservations.
+        Les touristes créent, les pros et touristes consultent et mettent à jour le statut.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+    post:
+      operationId: reservations_create
+      description: |-
+        ViewSet pour la gestion des réservations.
+        Les touristes créent, les pros et touristes consultent et mettent à jour le statut.
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/reservations/{id}/:
+    get:
+      operationId: reservations_retrieve
+      description: |-
+        ViewSet pour la gestion des réservations.
+        Les touristes créent, les pros et touristes consultent et mettent à jour le statut.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Réservation.
+        required: true
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    patch:
+      operationId: reservations_partial_update
+      description: |-
+        Logique métier pour la mise à jour partielle (PATCH).
+        Seul le statut peut être modifié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Réservation.
+        required: true
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReservationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReservationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReservationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/services/:
+    get:
+      operationId: services_list
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      parameters:
+      - in: query
+        name: localisation
+        schema:
+          type: string
+        description: Localisation (adresse)
+      - in: query
+        name: note_min
+        schema:
+          type: number
+        description: Note minimale (1-5)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: prix_max
+        schema:
+          type: number
+        description: Prix maximum
+      - in: query
+        name: prix_min
+        schema:
+          type: number
+        description: Prix minimum
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_service
+        schema:
+          type: string
+          title: Type de service
+          enum:
+          - ACTIVITE
+          - HEBERGEMENT
+          - SNACK
+          - TRANSPORT
+        description: |-
+          * `HEBERGEMENT` - Hébergement
+          * `SNACK` - Snack / Restaurant
+          * `ACTIVITE` - Activité / Loisir
+          * `TRANSPORT` - Transport
+      tags:
+      - services
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServiceList'
+          description: ''
+    post:
+      operationId: services_create
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      tags:
+      - services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+  /api/services/{id}/:
+    get:
+      operationId: services_retrieve
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service.
+        required: true
+      tags:
+      - services
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    put:
+      operationId: services_update
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service.
+        required: true
+      tags:
+      - services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    patch:
+      operationId: services_partial_update
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service.
+        required: true
+      tags:
+      - services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    delete:
+      operationId: services_destroy
+      description: |-
+        ViewSet pour la gestion du catalogue des services.
+        Accessible en lecture à tous, modification réservée aux professionnels propriétaires.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service.
+        required: true
+      tags:
+      - services
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Avis:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service:
+          type: integer
+          title: Service évalué
+        auteur:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+        note:
+          type: integer
+          maximum: 5
+          minimum: 1
+          title: Note (1 à 5)
+        commentaire:
+          type: string
+          nullable: true
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - auteur
+      - date_creation
+      - id
+      - note
+      - service
+    AvisRequest:
+      type: object
+      properties:
+        service:
+          type: integer
+          title: Service évalué
+        note:
+          type: integer
+          maximum: 5
+          minimum: 1
+          title: Note (1 à 5)
+        commentaire:
+          type: string
+          nullable: true
+      required:
+      - note
+      - service
+    Evenement:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        titre:
+          type: string
+          title: Titre de l'événement
+          maxLength: 200
+        description:
+          type: string
+        type_evenement:
+          allOf:
+          - $ref: '#/components/schemas/TypeEvenementEnum'
+          title: Type d'événement
+        date_debut:
+          type: string
+          format: date-time
+          title: Date et heure de début
+        date_fin:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date et heure de fin
+        lieu:
+          type: string
+          maxLength: 300
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+          title: Image de l'événement
+        est_actif:
+          type: boolean
+          title: Événement actif
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+        organisateur:
+          type: integer
+          nullable: true
+          title: Organisateur (Professionnel)
+      required:
+      - date_creation
+      - date_debut
+      - description
+      - id
+      - lieu
+      - titre
+      - type_evenement
+    ModePaiementEnum:
+      enum:
+      - ESPECES
+      - FLOOZ
+      - TMONEY
+      type: string
+      description: |-
+        * `ESPECES` - Espèces
+        * `FLOOZ` - Flooz (Moov)
+        * `TMONEY` - T-Money (Togocom)
+    MyTokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    OperateurEnum:
+      enum:
+      - FLOOZ
+      - TMONEY
+      type: string
+      description: |-
+        * `FLOOZ` - Flooz (Moov)
+        * `TMONEY` - T-Money (Togocom)
+    PaginatedAvisList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Avis'
+    PaginatedEvenementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evenement'
+    PaginatedReservationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    PaginatedServiceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+    PaiementAcompte:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        operateur:
+          allOf:
+          - $ref: '#/components/schemas/OperateurEnum'
+          title: Opérateur mobile
+        numero_telephone:
+          type: string
+          title: Numéro de téléphone utilisé
+          maxLength: 20
+        reference_transaction:
+          type: string
+          title: Référence / code de transaction
+          maxLength: 100
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Montant payé (FCFA)
+        statut_paiement:
+          allOf:
+          - $ref: '#/components/schemas/StatutPaiementEnum'
+          title: Statut du paiement
+        date_paiement:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_paiement
+      - id
+      - montant
+      - numero_telephone
+      - operateur
+      - reference_transaction
+    PaiementAcompteRequest:
+      type: object
+      properties:
+        operateur:
+          allOf:
+          - $ref: '#/components/schemas/OperateurEnum'
+          title: Opérateur mobile
+        numero_telephone:
+          type: string
+          minLength: 1
+          title: Numéro de téléphone utilisé
+          maxLength: 20
+        reference_transaction:
+          type: string
+          minLength: 1
+          title: Référence / code de transaction
+          maxLength: 100
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Montant payé (FCFA)
+        statut_paiement:
+          allOf:
+          - $ref: '#/components/schemas/StatutPaiementEnum'
+          title: Statut du paiement
+      required:
+      - montant
+      - numero_telephone
+      - operateur
+      - reference_transaction
+    PaiementSolde:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Montant solde payé (FCFA)
+        mode_paiement:
+          allOf:
+          - $ref: '#/components/schemas/ModePaiementEnum'
+          title: Mode de paiement du solde
+        reference_transaction:
+          type: string
+          nullable: true
+          title: Référence transaction (si mobile)
+          maxLength: 100
+        date_paiement:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_paiement
+      - id
+      - mode_paiement
+      - montant
+    PaiementSoldeRequest:
+      type: object
+      properties:
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Montant solde payé (FCFA)
+        mode_paiement:
+          allOf:
+          - $ref: '#/components/schemas/ModePaiementEnum'
+          title: Mode de paiement du solde
+        reference_transaction:
+          type: string
+          nullable: true
+          title: Référence transaction (si mobile)
+          maxLength: 100
+      required:
+      - mode_paiement
+      - montant
+    PatchedAvisRequest:
+      type: object
+      properties:
+        service:
+          type: integer
+          title: Service évalué
+        note:
+          type: integer
+          maximum: 5
+          minimum: 1
+          title: Note (1 à 5)
+        commentaire:
+          type: string
+          nullable: true
+    PatchedReservationRequest:
+      type: object
+      properties:
+        service:
+          type: integer
+          title: Service réservé
+        date_debut:
+          type: string
+          format: date
+          title: Date de début / arrivée
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: Date de fin / départ (hébergement)
+        nombre_personnes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Nombre de personnes
+        message:
+          type: string
+          nullable: true
+          title: Message ou demande spéciale
+    PatchedServiceRequest:
+      type: object
+      properties:
+        nom:
+          type: string
+          minLength: 1
+          title: Nom du service
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+        type_service:
+          allOf:
+          - $ref: '#/components/schemas/TypeServiceEnum'
+          title: Type de service
+        prix:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        adresse:
+          type: string
+          nullable: true
+          maxLength: 300
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Latitude (géolocalisation)
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Longitude (géolocalisation)
+        horaire_ouverture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure d'ouverture
+        horaire_fermeture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure de fermeture
+        professionnel_id:
+          type: integer
+          writeOnly: true
+    PhotoService:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image:
+          type: string
+          format: uri
+        legende:
+          type: string
+          nullable: true
+          title: Légende
+          maxLength: 200
+        est_principale:
+          type: boolean
+          title: Photo principale
+      required:
+      - id
+      - image
+    PhotoServiceRequest:
+      type: object
+      properties:
+        image:
+          type: string
+          format: binary
+        legende:
+          type: string
+          nullable: true
+          title: Légende
+          maxLength: 200
+        est_principale:
+          type: boolean
+          title: Photo principale
+      required:
+      - image
+    ProfilPro:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nom_entreprise:
+          type: string
+          readOnly: true
+        est_verifie:
+          type: boolean
+          readOnly: true
+          title: Compte vérifié par l'admin
+        description_etablissement:
+          type: string
+          readOnly: true
+          nullable: true
+          title: Description de l'établissement
+        adresse:
+          type: string
+          readOnly: true
+          nullable: true
+        site_web:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+      required:
+      - adresse
+      - description_etablissement
+      - est_verifie
+      - id
+      - nom_entreprise
+      - site_web
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service:
+          type: integer
+          title: Service réservé
+        service_details:
+          allOf:
+          - $ref: '#/components/schemas/Service'
+          readOnly: true
+        date_debut:
+          type: string
+          format: date
+          title: Date de début / arrivée
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: Date de fin / départ (hébergement)
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutEnum'
+          readOnly: true
+        nombre_personnes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Nombre de personnes
+        message:
+          type: string
+          nullable: true
+          title: Message ou demande spéciale
+        prix_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        montant_acompte:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        solde_restant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        paiement_acompte:
+          allOf:
+          - $ref: '#/components/schemas/PaiementAcompte'
+          readOnly: true
+        paiement_solde:
+          allOf:
+          - $ref: '#/components/schemas/PaiementSolde'
+          readOnly: true
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_creation
+      - date_debut
+      - id
+      - montant_acompte
+      - paiement_acompte
+      - paiement_solde
+      - prix_total
+      - service
+      - service_details
+      - solde_restant
+      - statut
+    ReservationRequest:
+      type: object
+      properties:
+        service:
+          type: integer
+          title: Service réservé
+        date_debut:
+          type: string
+          format: date
+          title: Date de début / arrivée
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: Date de fin / départ (hébergement)
+        nombre_personnes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Nombre de personnes
+        message:
+          type: string
+          nullable: true
+          title: Message ou demande spéciale
+      required:
+      - date_debut
+      - service
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nom:
+          type: string
+          title: Nom du service
+          maxLength: 200
+        description:
+          type: string
+        type_service:
+          allOf:
+          - $ref: '#/components/schemas/TypeServiceEnum'
+          title: Type de service
+        prix:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        adresse:
+          type: string
+          nullable: true
+          maxLength: 300
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Latitude (géolocalisation)
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Longitude (géolocalisation)
+        horaire_ouverture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure d'ouverture
+        horaire_fermeture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure de fermeture
+        professionnel:
+          allOf:
+          - $ref: '#/components/schemas/ProfilPro'
+          readOnly: true
+        note_moyenne:
+          type: number
+          format: double
+          readOnly: true
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotoService'
+          readOnly: true
+        photo_principale:
+          type: string
+          readOnly: true
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_creation
+      - description
+      - id
+      - nom
+      - note_moyenne
+      - photo_principale
+      - photos
+      - prix
+      - professionnel
+      - type_service
+    ServiceRequest:
+      type: object
+      properties:
+        nom:
+          type: string
+          minLength: 1
+          title: Nom du service
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+        type_service:
+          allOf:
+          - $ref: '#/components/schemas/TypeServiceEnum'
+          title: Type de service
+        prix:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        adresse:
+          type: string
+          nullable: true
+          maxLength: 300
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Latitude (géolocalisation)
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          title: Longitude (géolocalisation)
+        horaire_ouverture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure d'ouverture
+        horaire_fermeture:
+          type: string
+          format: time
+          nullable: true
+          title: Heure de fermeture
+        professionnel_id:
+          type: integer
+          writeOnly: true
+      required:
+      - description
+      - nom
+      - prix
+      - professionnel_id
+      - type_service
+    StatutEnum:
+      enum:
+      - EN_ATTENTE
+      - ACOMPTE_EN_VERIFICATION
+      - CONFIRMEE
+      - SOLDE_EN_ATTENTE
+      - TERMINEE
+      - ANNULEE
+      type: string
+      description: |-
+        * `EN_ATTENTE` - En attente de paiement acompte
+        * `ACOMPTE_EN_VERIFICATION` - Acompte en vérification
+        * `CONFIRMEE` - Confirmée
+        * `SOLDE_EN_ATTENTE` - En attente du solde
+        * `TERMINEE` - Terminée
+        * `ANNULEE` - Annulée
+    StatutPaiementEnum:
+      enum:
+      - EN_ATTENTE
+      - EN_COURS
+      - VALIDE
+      - REJETE
+      type: string
+      description: |-
+        * `EN_ATTENTE` - En attente
+        * `EN_COURS` - Vérification en cours
+        * `VALIDE` - Validé
+        * `REJETE` - Rejeté
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TypeEvenementEnum:
+      enum:
+      - FESTIVAL
+      - CONCERT
+      - SPORTIF
+      - CULTUREL
+      - GASTRONOMIE
+      - AUTRE
+      type: string
+      description: |-
+        * `FESTIVAL` - Festival
+        * `CONCERT` - Concert
+        * `SPORTIF` - Événement sportif
+        * `CULTUREL` - Visite culturelle
+        * `GASTRONOMIE` - Gastronomie
+        * `AUTRE` - Autre
+    TypeServiceEnum:
+      enum:
+      - HEBERGEMENT
+      - SNACK
+      - ACTIVITE
+      - TRANSPORT
+      type: string
+      description: |-
+        * `HEBERGEMENT` - Hébergement
+        * `SNACK` - Snack / Restaurant
+        * `ACTIVITE` - Activité / Loisir
+        * `TRANSPORT` - Transport
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
