@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,11 +33,9 @@ ALLOWED_HOSTS = [
     "10.0.2.2"
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-    "http://10.0.2.2"
-]
+# En developpement : autoriser toutes les origines
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Application definition
 
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,12 +70,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'mayib.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -159,12 +162,14 @@ REST_FRAMEWORK = {
     ),
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME':  timedelta(minutes=60),   # Token expire en 1h
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),        # Refresh valable 7 jours
+    'AUTH_HEADER_TYPES':      ('Bearer',),              # Header: Authorization: Bearer <token>
+    'ROTATE_REFRESH_TOKENS':  True,                     # Nouveau refresh à chaque usage
+    'BLACKLIST_AFTER_ROTATION': True,                   # Invalide l'ancien refresh
 }
+
 
 
 # Default primary key field type
