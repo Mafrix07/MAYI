@@ -7,7 +7,7 @@ class PaiementAcompteSerializer(serializers.ModelSerializer):
         model = PaiementAcompte
         fields = [
             'id', 'operateur', 'numero_telephone', 'reference_transaction', 
-            'montant', 'statut_paiement', 'date_paiement'
+            'montant', 'statut_paiement', 'date_paiement', 'capture_ecran'
         ]
 
 class PaiementSoldeSerializer(serializers.ModelSerializer):

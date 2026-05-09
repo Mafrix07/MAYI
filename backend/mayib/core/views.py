@@ -1,4 +1,4 @@
-# ============================================================
+ # ============================================================
 # FICHIER : core/views.py
 # DOMAINE : Données transversales
 # NE PAS MODIFIER : core/serializers.py, core/models.py
@@ -6,8 +6,8 @@
 
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Evenement
-from .serializers import EvenementSerializer
+from .models import Evenement, Notification
+from .serializers import EvenementSerializer, NotificationSerializer
 
 class EvenementViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -25,6 +25,13 @@ class EvenementViewSet(viewsets.ReadOnlyModelViewSet):
     
     # Champs de recherche textuelle
     search_fields = ['titre', 'description', 'lieu']
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(destinataire=self.request.user)
 
 # Résumé de fin de phase :
 # ✓ Créé : EvenementViewSet

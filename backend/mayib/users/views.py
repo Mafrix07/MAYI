@@ -1,3 +1,5 @@
+
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -14,13 +16,13 @@ class InscriptionView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = InscriptionSerializer(data=request.data)
+        serializer = InscriptionSerializer(data=request.data, context= {'request': request})
         if serializer.is_valid():
             user = serializer.save()
             return Response({
                 "success": True,
                 "message": "Compte créé avec succès.",
-                "user": ProfilUtilisateurSerializer(user).data
+                "user": ProfilUtilisateurSerializer(user, context= {'request': request} ).data
             }, status=status.HTTP_201_CREATED)
         return Response({
             "success": False,
@@ -33,10 +35,10 @@ class MonProfilView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(ProfilUtilisateurSerializer(request.user).data)
+        return Response(ProfilUtilisateurSerializer(request.user), context={'request': request}).data
 
     def patch(self, request):
-        serializer = ProfilUtilisateurSerializer(request.user, data=request.data, partial=True)
+        serializer = ProfilUtilisateurSerializer(request.user, data=request.data, partial=True,context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response({

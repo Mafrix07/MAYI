@@ -22,7 +22,7 @@ class InscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Utilisateur
-        fields = ('username', 'email', 'password', 'password_confirm', 'role', 'phone', 'first_name', 'last_name')
+        fields = ('username', 'email', 'password', 'password_confirm', 'role', 'telephone', 'first_name', 'last_name')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:

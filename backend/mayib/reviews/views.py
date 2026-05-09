@@ -9,6 +9,7 @@ from rest_framework import viewsets, permissions
 from .models import Avis
 from .serializers import AvisSerializer
 from users.permissions import IsTouriste
+from django_filters.rest_framework import DjangoFilterBackend
 
 class IsOwnerAvis(permissions.BasePermission):
     """
@@ -25,6 +26,9 @@ class AvisViewSet(viewsets.ModelViewSet):
     Lecture publique, création réservée aux touristes, modification à l'auteur.
     """
     serializer_class = AvisSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['service']
+
 
     def get_queryset(self):
         """

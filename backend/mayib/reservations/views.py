@@ -9,7 +9,6 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
 from .models import Reservation
 from .serializers import ReservationSerializer
 from users.permissions import IsTouriste, IsSupportOrAdmin
@@ -62,7 +61,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
         """
         Attache le touriste (Utilisateur) à la réservation.
         """
-        serializer.save(touriste=self.request.user)
+        service = serializer.validated_data['service']
+        serializer.save(touriste=self.request.user, prix_total=service.prix)
 
     def partial_update(self, request, *args, **kwargs):
         """

@@ -45,9 +45,11 @@ class ServiceViewSet(viewsets.ModelViewSet):
         """
         queryset = Service.objects.all()
         queryset = queryset.annotate(
-            note_moyenne_ann=Avg('avis__note')
+            note_moyenne=Avg('avis__note')
         ).select_related(
             'professionnel__utilisateur'
+        ).prefetch_related(
+            'photos'
         )
         return queryset
 
