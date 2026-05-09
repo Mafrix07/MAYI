@@ -1,4 +1,4 @@
-package com.example.mayif
+package com.example.frontend_new
 
 import io.flutter.embedding.android.FlutterActivity
 
