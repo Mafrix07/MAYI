@@ -8,6 +8,7 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import 'register_screen.dart';
 import '../home/home_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -37,20 +39,27 @@ class _LoginScreenState extends State<LoginScreen> {
   if (!mounted) return;
 
   if (success) {
-    // Redirection selon le rôle
-    final role = auth.role;
-    if (role == 'PROFESSIONNEL') {
-      Navigator.pushReplacementNamed(context, '/dashboard-pro');
-    } else if (role == 'STAFF') {
-      Navigator.pushReplacementNamed(context, '/admin');
-    } else {
-      Navigator.pushReplacementNamed(context, '/home');
-    }
-  } else {
-    setState(() {
-      _errorMessage = 'Email ou mot de passe incorrect';
-    });
+  final role = auth.role;
+
+  if (role == 'PROFESSIONNEL') {
+    Navigator.pushReplacementNamed(context, '/dashboard-pro');
+
+  } else if (role == 'STAFF' || role == 'ADMIN') {
+    // Ouvrir le dashboard Django dans le navigateur
+    final token = auth.token;
+
+    final url = Uri.parse('http://127.0.0.1:8000/dashboard/auto-login/?token=$token');
+    if (await canLaunchUrl(url)) {
+    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
+    // Rester sur LoginScreen (pas de redirection Flutter)
+    setState(() => _errorMessage = null);
+
+  } else {
+    // TOURISTE
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+}
 
   setState(() => _isLoading = false);
 }

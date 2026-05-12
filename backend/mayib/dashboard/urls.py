@@ -6,6 +6,7 @@ app_name = 'dashboard'
 urlpatterns = [
     # Main Dashboard
     path('', views.index, name='index'),
+    path('auto-login/', views.auto_login, name='auto_login'),
 
     # Users Management
     path('users/', views.user_list, name='user_list'),

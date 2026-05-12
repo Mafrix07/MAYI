@@ -15,7 +15,30 @@ from django.db.models.functions import TruncDate
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
+from django.contrib.auth import login
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth import get_user_model
 
+def auto_login(request):
+    """Connexion automatique depuis Flutter via JWT"""
+    token = request.GET.get('token')
+    if not token:
+        return redirect('dashboard:login')
+    try:
+        # Vérifier et décoder le token JWT
+        access_token = AccessToken(token)
+        user_id = access_token['user_id']
+        User = get_user_model()
+        user = User.objects.get(id=user_id)
+        # Vérifier que c'est bien un STAFF ou ADMIN
+        if user.role not in ['STAFF', 'ADMIN']:
+            return redirect('dashboard:login')
+        # Créer la session Django
+        login(request, user,
+            backend='django.contrib.auth.backends.ModelBackend')
+        return redirect('dashboard:index')
+    except Exception:
+        return redirect('dashboard:login')
 class MayiLoginView(LoginView):
     template_name = 'dashboard/mayi_login.html'
 
