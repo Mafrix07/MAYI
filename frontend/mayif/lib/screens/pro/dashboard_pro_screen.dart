@@ -51,7 +51,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Bonjour, ${user?.firstName ?? 'Professionnel'} 👋',
+                    'Bonjour, ${user?.username ?? 'Professionnel'} 👋',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,

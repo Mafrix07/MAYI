@@ -10,8 +10,8 @@ class AuthProvider with ChangeNotifier {
   String? _token;
   String? _role;
   String? get role => _role;
-
-
+  bool _isReady = false;
+  bool get isReady => _isReady;
 
   final _storage = const FlutterSecureStorage();
 
@@ -79,11 +79,18 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    final token = await _storage.read(key: 'token');
-    if (token != null) {
-      _token = token;
-      _decodeToken();
-      await fetchProfile();
+    try {
+      final token = await _storage.read(key: 'token');
+      if (token != null) {
+        _token = token;
+        _decodeToken();
+        await fetchProfile();
+      }
+      await Future.delayed(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('Auto-login error: $e');
+    } finally {
+      _isReady = true;
       notifyListeners();
     }
   }
