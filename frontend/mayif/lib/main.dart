@@ -6,6 +6,7 @@ import 'screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/pro/dashboard_pro_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ class MayiTogoApp extends StatelessWidget {
   // Ajouter ces routes
   routes: {
     '/home':           (context) => const HomeScreen(),
-    '/dashboard-pro':  (context) => const HomeScreen(), // temporaire
+    '/dashboard-pro':  (context) => const DashboardProScreen(),
     '/admin':          (context) => const HomeScreen(), // temporaire
   },
   home: Consumer<AuthProvider>(
