@@ -35,7 +35,7 @@ class MonProfilView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(ProfilUtilisateurSerializer(request.user), context={'request': request}).data
+        return Response(ProfilUtilisateurSerializer(request.user, context={'request': request}).data)
 
     def patch(self, request):
         serializer = ProfilUtilisateurSerializer(request.user, data=request.data, partial=True,context={'request': request})

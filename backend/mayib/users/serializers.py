@@ -3,14 +3,30 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Utilisateur, ProfilProfessionnel, ProfilTouriste
 
-# ── AUTHENTIFICATION (Restauré) ──────────────────────────────────────────────
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    
+    def validate(self, attrs):
+        # Récupérer la valeur du champ username
+        login = attrs.get('username', '')
+        
+        # Si c'est un email, trouver le username correspondant
+        if '@' in login:
+            try:
+                user = Utilisateur.objects.get(email=login)
+                attrs['username'] = user.username
+            except Utilisateur.DoesNotExist:
+                raise serializers.ValidationError(
+                    {'email': 'Aucun compte trouvé avec cet email.'}
+                )
+        
+        return super().validate(attrs)
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        # Champs custom ajoutes dans le payload du token
         token['username'] = user.username
-        token['role'] = user.role  # TOURISTE, PROFESSIONNEL, SUPPORT, ADMIN
+        token['role'] = user.role
         token['email'] = user.email
         return token
 

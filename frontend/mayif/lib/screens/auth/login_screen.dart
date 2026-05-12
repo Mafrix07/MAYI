@@ -1,3 +1,5 @@
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +19,41 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _handleLogin() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  final auth = context.read<AuthProvider>();
+  final success = await auth.login(
+    _emailController.text.trim(),
+    _passwordController.text.trim(),
+  );
+
+  if (!mounted) return;
+
+  if (success) {
+    // Redirection selon le rôle
+    final role = auth.role;
+    if (role == 'PROFESSIONNEL') {
+      Navigator.pushReplacementNamed(context, '/dashboard-pro');
+    } else if (role == 'STAFF') {
+      Navigator.pushReplacementNamed(context, '/admin');
+    } else {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  } else {
+    setState(() {
+      _errorMessage = 'Email ou mot de passe incorrect';
+    });
+  }
+
+  setState(() => _isLoading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -113,16 +150,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         CustomButton(
                           text: 'Se connecter',
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _handleLogin,
+                          isLoading: _isLoading,
                         ),
                       ],
                     ),

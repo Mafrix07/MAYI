@@ -35,16 +35,22 @@ class MayiTogoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mayi Togo Tourism',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.premiumTheme,
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return auth.isAuthenticated
-              ? const HomeScreen()
-              : const LoginScreen();
-        }
-      ),
-    );
+  title: 'Mayi Togo Tourism',
+  debugShowCheckedModeBanner: false,
+  theme: AppTheme.premiumTheme,
+  // Ajouter ces routes
+  routes: {
+    '/home':           (context) => const HomeScreen(),
+    '/dashboard-pro':  (context) => const HomeScreen(), // temporaire
+    '/admin':          (context) => const HomeScreen(), // temporaire
+  },
+  home: Consumer<AuthProvider>(
+    builder: (context, auth, _) {
+      return auth.isAuthenticated
+          ? const HomeScreen()
+          : const LoginScreen();
+    },
+  ),
+);
   }
 }

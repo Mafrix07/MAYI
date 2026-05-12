@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,21 +21,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _usernameController = TextEditingController();
+  String? _errorMessage;
   bool _acceptTerms = false;
   bool _isLoading = false;
 
   void _handleRegister() async {
-    setState(() => _isLoading = true);
-    // Simulation du chargement
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compte créé avec succès !')),
-      );
-      Navigator.pop(context);
-    }
+  // Vérifications de base
+  if (!_acceptTerms) {
+    setState(() => _errorMessage = 'Veuillez accepter les conditions.');
+    return;
   }
+  if (_passwordController.text != _confirmPasswordController.text) {
+    setState(() => _errorMessage = 'Les mots de passe ne correspondent pas.');
+    return;
+  }
+
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  final auth = context.read<AuthProvider>();
+  final success = await auth.register({
+    'username':         _usernameController.text.trim(),
+    'email':            _emailController.text.trim(),
+    'password':         _passwordController.text,
+    'password_confirm': _confirmPasswordController.text,
+    'first_name':       _firstNameController.text.trim(),
+    'last_name':        _lastNameController.text.trim(),
+    'telephone':        _phoneController.text.trim(),
+    'role':             'TOURISTE',
+  });
+
+  if (!mounted) return;
+
+  if (success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compte créé avec succès ! Connectez-vous.'),
+        backgroundColor: Color(0xFF1A6B3C),
+      ),
+    );
+    Navigator.pop(context); // Retour vers Login
+  } else {
+    setState(() => _errorMessage = 'Erreur lors de la création du compte.');
+  }
+
+  setState(() => _isLoading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: CustomTextField(
                       controller: _firstNameController,
                       label: 'Prénom',
-                      hint: 'Jean',
+                      hint: 'Koffi',
                       icon: Icons.person_outline,
                     ),
                   ),
@@ -81,12 +117,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: CustomTextField(
                       controller: _lastNameController,
                       label: 'Nom',
-                      hint: 'Doe',
+                      hint: 'HOUNDJO',
                       icon: Icons.person_outline,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                  controller: _usernameController,
+                  label: 'Nom d\'utilisateur',
+                  hint: 'ex: username',
+                  icon: Icons.alternate_email,
+                ),
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _emailController,
@@ -165,6 +208,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               
               const SizedBox(height: 30),
+              // Ajouter juste avant CustomButton
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               
               CustomButton(
                 text: 'Créer mon compte',
