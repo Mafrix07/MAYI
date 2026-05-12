@@ -1,0 +1,103 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.pk }} | {{ ticket.sujet }}{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="breadcrumb-item"><a href="{% url 'dashboard:support_list' %}">Support</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Ticket #{{ ticket.pk }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="card-title">Ticket #{{ ticket.pk }} : {{ ticket.sujet }}</h4>
+                    <label class="badge 
+                        {% if ticket.statut == 'OUVERT' %}badge-danger
+                        {% elif ticket.statut == 'EN_COURS' %}badge-warning
+                        {% elif ticket.statut == 'RESOLU' %}badge-success
+                        {% else %}badge-secondary{% endif %}">
+                        {{ ticket.get_statut_display }}
+                    </label>
+                </div>
+
+                <div class="ticket-description bg-light p-3 mb-4 rounded">
+                    <h6>Description initiale :</h6>
+                    <p>{{ ticket.description|linebreaks }}</p>
+                    <small class="text-muted">Posté le {{ ticket.date_creation|date:"d/m/Y à H:i" }}</small>
+                </div>
+
+                <hr>
+
+                <div class="conversation-thread mb-4" style="max-height: 500px; overflow-y: auto;">
+                    {% for msg in messages_list %}
+                        <div class="message mb-3 d-flex {% if msg.auteur.is_staff or msg.auteur.role == 'SUPPORT' %}justify-content-end{% endif %}">
+                            <div class="p-3 rounded {% if msg.auteur.is_staff or msg.auteur.role == 'SUPPORT' %}bg-primary text-white{% else %}bg-secondary text-white{% endif %}" style="max-width: 80%;">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small><strong>{{ msg.auteur.username }}</strong></small>
+                                    <small class="ml-3">{{ msg.date_envoi|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="mb-0">{{ msg.contenu|linebreaksbr }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-center text-muted">Aucun échange pour le moment.</p>
+                    {% endfor %}
+                </div>
+
+                {% if ticket.statut != 'FERME' and ticket.statut != 'RESOLU' %}
+                <form action="" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <textarea name="message" class="form-control" rows="4" placeholder="Tapez votre réponse ici..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Envoyer la réponse</button>
+                </form>
+                {% else %}
+                <div class="alert alert-info">Ce ticket est clôturé. Vous ne pouvez plus y répondre.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="card-title">Informations Client</h4>
+                <div class="text-center">
+                    <img src="{% if ticket.utilisateur.photo_profil %}{{ ticket.utilisateur.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" class="img-sm rounded-circle mb-2">
+                    <h6>{{ ticket.utilisateur.username }}</h6>
+                    <p class="small">{{ ticket.utilisateur.email }}</p>
+                    <a href="{% url 'dashboard:user_detail' ticket.utilisateur.pk %}" class="btn btn-xs btn-outline-primary">Voir Profil</a>
+                </div>
+                <hr>
+                <p><strong>Type:</strong> {{ ticket.get_type_ticket_display }}</p>
+                {% if ticket.reservation %}
+                    <p><strong>Réservation:</strong> <a href="{% url 'dashboard:reservation_detail' ticket.reservation.pk %}">#{{ ticket.reservation.pk }}</a></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Gestion du Ticket</h4>
+                <form action="{% url 'dashboard:support_change_status' ticket.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Modifier le statut</label>
+                        <select name="status" class="form-control mb-3">
+                            {% for val, label in statuses %}
+                                <option value="{{ val }}" {% if ticket.statut == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Mettre à jour</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

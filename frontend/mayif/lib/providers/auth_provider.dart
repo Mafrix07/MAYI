@@ -10,8 +10,8 @@ class AuthProvider with ChangeNotifier {
   String? _token;
   String? _role;
   String? get role => _role;
-
-
+  bool _isReady = false;
+  bool get isReady => _isReady;
 
   final _storage = const FlutterSecureStorage();
 
@@ -19,18 +19,20 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
   bool get isAuthenticated => _token != null;
 
-  get JwtParser => null;
+
 
   Future<bool> login(String username, String password) async {
     try {
-      final response = await ApiService.post('/token/', {
-        'username': username,
-        'password': password,
-      });
+      final response = await ApiService.post('/auth/login/', {
+          'username': username,
+          'password': password,
+      }
+      ) ;
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _token = data['access'];
+        _decodeToken();
         await _storage.write(key: 'token', value: _token);
 
         // Fetch user profile
@@ -46,7 +48,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> register(Map<String, dynamic> userData) async {
     try {
-      final response = await ApiService.post('/users/inscription/', userData);
+      final response = await ApiService.post('/auth/register/', userData);
       if (response.statusCode == 201) {
         return true;
       }
@@ -59,7 +61,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> fetchProfile() async {
     if (_token == null) return;
     try {
-      final response = await ApiService.get('/users/me/');
+      final response = await ApiService.get('/auth/me/');
       if (response.statusCode == 200) {
         _user = User.fromJson(jsonDecode(response.body));
         notifyListeners();
@@ -77,18 +79,25 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    final token = await _storage.read(key: 'token');
-    if (token != null) {
-      _token = token;
-      _decodeToken();
-      await fetchProfile();
+    try {
+      final token = await _storage.read(key: 'token');
+      if (token != null) {
+        _token = token;
+        _decodeToken();
+        await fetchProfile();
+      }
+      await Future.delayed(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('Auto-login error: $e');
+    } finally {
+      _isReady = true;
       notifyListeners();
     }
   }
-  void _decodeToken(){
-    if (_token != null) {
-      final payload = JwtParser.parse(_token!);
-      _role = payload['role']; // Extrait le rôle (ex: TOURISTE)
-    }
+  void _decodeToken() {
+  if (_token != null) {
+    final payload = JwtParser.parse(_token!);
+    _role = payload['role'];
   }
+}
 }

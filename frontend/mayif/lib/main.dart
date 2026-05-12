@@ -6,6 +6,10 @@ import 'screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/pro/dashboard_pro_screen.dart';
+import 'screens/splash_screen.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,16 +39,27 @@ class MayiTogoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mayi Togo Tourism',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.premiumTheme,
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return auth.isAuthenticated
-              ? const HomeScreen()
-              : const LoginScreen();
-        }
-      ),
-    );
+  navigatorKey: navigatorKey,
+  title: 'Mayi Togo Tourism',
+  debugShowCheckedModeBanner: false,
+  theme: AppTheme.premiumTheme,
+  // Ajouter ces routes
+  routes: {
+    '/login':          (context) => const LoginScreen(),
+    '/home':           (context) => const HomeScreen(),
+    '/dashboard-pro':  (context) => const DashboardProScreen(),
+    '/admin':          (context) => const HomeScreen(), // temporaire
+  },
+  home: Consumer<AuthProvider>(
+    builder: (context, auth, _) {
+      if (!auth.isReady) {
+        return const SplashScreen();
+      }
+      return auth.isAuthenticated
+          ? const HomeScreen()
+          : const LoginScreen();
+    },
+  ),
+);
   }
 }

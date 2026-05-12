@@ -1,3 +1,5 @@
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +8,7 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import 'register_screen.dart';
 import '../home/home_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +20,49 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _handleLogin() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  final auth = context.read<AuthProvider>();
+  final success = await auth.login(
+    _emailController.text.trim(),
+    _passwordController.text.trim(),
+  );
+
+  if (!mounted) return;
+
+  if (success) {
+  final role = auth.role;
+
+  if (role == 'PROFESSIONNEL') {
+    Navigator.pushReplacementNamed(context, '/dashboard-pro');
+
+  } else if (role == 'STAFF' || role == 'ADMIN') {
+    // Ouvrir le dashboard Django dans le navigateur
+    final token = auth.token;
+
+    final url = Uri.parse('http://127.0.0.1:8000/dashboard/auto-login/?token=$token');
+    if (await canLaunchUrl(url)) {
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
+    // Rester sur LoginScreen (pas de redirection Flutter)
+    setState(() => _errorMessage = null);
+
+  } else {
+    // TOURISTE
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+}
+
+  setState(() => _isLoading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -113,16 +159,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         CustomButton(
                           text: 'Se connecter',
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _handleLogin,
+                          isLoading: _isLoading,
                         ),
                       ],
                     ),

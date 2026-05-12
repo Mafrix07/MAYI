@@ -1,0 +1,170 @@
+/* backend/mayib/dashboard/static/dashboard/css/mayi-theme.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --mayi-primary: #1B5E20;
+  --mayi-primary-hover: #2E7D32;
+  --mayi-accent: #F57C00;
+  --mayi-accent-hover: #FF9800;
+  --mayi-ocean: #0277BD;
+  --mayi-turquoise: #29B6F6;
+  --mayi-success: #4CAF50;
+  --mayi-error: #E53935;
+  --mayi-warning: #FF9800;
+  --mayi-bg: #FAFAFA;
+  --mayi-text-main: #212121;
+  --mayi-text-sec: #757575;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif !important;
+  background-color: var(--mayi-bg);
+}
+
+/* ===== TOPBAR ===== */
+.navbar.default-layout {
+  background: #ffffff !important;
+  border-bottom: 3px solid #1B5E20 !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+  padding: 0 !important;
+}
+
+.navbar .navbar-brand-wrapper {
+  background: #1B5E20 !important;
+  width: 260px !important;
+  height: 70px !important;
+}
+
+.navbar .navbar-menu-wrapper {
+    background: #ffffff !important;
+    width: calc(100% - 260px) !important;
+    height: 70px !important;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  background: #1B5E20 !important;
+  min-height: 100vh;
+  width: 260px !important;
+  padding-top: 70px !important; /* Pour laisser place au brand wrapper fixed */
+}
+
+.sidebar .nav .nav-item .nav-link {
+  color: #C8E6C9 !important;
+  padding: 12px 20px !important;
+  border-radius: 6px !important;
+  margin: 2px 10px !important;
+  transition: all 0.25s ease !important;
+}
+
+.sidebar .nav .nav-item .nav-link:hover {
+  background: rgba(255,255,255,0.12) !important;
+  color: #ffffff !important;
+}
+
+.sidebar .nav .nav-item.active .nav-link {
+  background: #F57C00 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-left: 3px solid white;
+}
+
+.sidebar .nav .nav-item.active .nav-link .menu-icon {
+  color: #ffffff !important;
+}
+
+.sidebar .nav .nav-item .nav-link .menu-icon {
+  color: #A5D6A7 !important;
+  font-size: 1.1rem !important;
+  margin-right: 10px !important;
+}
+
+/* Catégories séparateurs */
+.sidebar .nav .nav-item.nav-category {
+  padding: 18px 20px 6px !important;
+  pointer-events: none;
+  background: transparent !important;
+}
+
+.sidebar .nav .nav-item.nav-category .nav-label {
+  color: #81C784 !important;
+  font-size: 0.70rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+}
+
+/* ===== BADGES STATUTS ===== */
+/* Réservations */
+.badge-statut-termine   { background:#757575 !important; color:#fff !important; }
+.badge-statut-confirme  { background:#4CAF50 !important; color:#fff !important; }
+.badge-statut-annule    { background:#E53935 !important; color:#fff !important; }
+.badge-statut-acompte   { background:#F57C00 !important; color:#fff !important; }
+.badge-statut-attente   { background:#FF9800 !important; color:#fff !important; }
+.badge-statut-encours   { background:#0277BD !important; color:#fff !important; }
+
+/* Rôles utilisateurs */
+.badge-role-admin       { background:#1B5E20 !important; color:#fff !important; }
+.badge-role-prestataire { background:#0277BD !important; color:#fff !important; }
+.badge-role-touriste    { background:#29B6F6 !important; color:#212121 !important; }
+
+/* Style général des badges */
+.badge-statut-termine, .badge-statut-confirme, 
+.badge-statut-annule, .badge-statut-acompte,
+.badge-statut-attente, .badge-statut-encours,
+.badge-role-admin, .badge-role-prestataire, .badge-role-touriste {
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  border: none !important;
+}
+
+/* ===== TITRES DE SECTION ===== */
+.section-title, h4.card-title, h5.card-title, .activites-title {
+  color: #1B5E20 !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* ===== LOGO ===== */
+.sidebar-brand-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1030;
+    transition: width 0.25s ease, background 0.25s ease;
+}
+
+.brand-logo img { 
+  max-height: 40px; 
+  width: auto;
+  object-fit: contain; 
+}
+
+/* Main Panel Adjustments */
+.main-panel {
+    width: calc(100% - 260px) !important;
+    margin-left: auto;
+}
+
+@media (max-width: 991px) {
+    .main-panel {
+        width: 100% !important;
+    }
+}
+
+/* CARDS KPI */
+.card-statistics {
+    border-top: 4px solid var(--mayi-primary);
+    transition: transform 0.2s;
+}
+.card-statistics:hover {
+    transform: translateY(-5px);
+}
+.card-statistics.kpi-res { border-top-color: var(--mayi-accent); }
+.card-statistics.kpi-services { border-top-color: var(--mayi-ocean); }
+.card-statistics.kpi-reviews { border-top-color: var(--mayi-turquoise); }

@@ -1,0 +1,60 @@
+{% load static %}
+<nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+  <div class="text-center navbar-brand-wrapper d-flex align-items-top justify-content-center">
+    <a class="navbar-brand brand-logo" href="{% url 'dashboard:index' %}">
+      <img src="{% static 'dashboard/assets/images/logo.svg' %}" alt="logo" /> </a>
+    <a class="navbar-brand brand-logo-mini" href="{% url 'dashboard:index' %}">
+      <img src="{% static 'dashboard/assets/images/logo-mini.svg' %}" alt="logo" /> </a>
+  </div>
+  <div class="navbar-menu-wrapper d-flex align-items-center">
+    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+      <span class="mdi mdi-menu"></span>
+    </button>
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link count-indicator" id="messageDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
+          <i class="mdi mdi-bell-outline"></i>
+          {% if notifications_count > 0 %}
+            <span class="count">{{ notifications_count }}</span>
+          {% endif %}
+        </a>
+        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="messageDropdown">
+          <a class="dropdown-item py-3">
+            <p class="mb-0 font-weight-medium float-left">You have {{ notifications_count }} notifications </p>
+          </a>
+          <div class="dropdown-divider"></div>
+          {% if reported_reviews_count > 0 %}
+          <a href="{% url 'dashboard:review_list' %}?reported=1" class="dropdown-item preview-item">
+             <p class="mb-0 font-weight-medium">{{ reported_reviews_count }} avis signalés</p>
+          </a>
+          {% endif %}
+          {% if open_tickets_count > 0 %}
+          <a href="{% url 'dashboard:support_list' %}?status=OUVERT" class="dropdown-item preview-item">
+             <p class="mb-0 font-weight-medium">{{ open_tickets_count }} tickets ouverts</p>
+          </a>
+          {% endif %}
+        </div>
+      </li>
+      <li class="nav-item dropdown d-none d-xl-inline-block user-dropdown">
+        <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
+          <img class="img-xs rounded-circle" src="{% if user.photo_profil %}{{ user.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" alt="Profile image">
+        </a>
+        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
+          <div class="dropdown-header text-center">
+            <img class="img-md rounded-circle" src="{% if user.photo_profil %}{{ user.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" alt="Profile image">
+            <p class="mb-1 mt-3 font-weight-semibold">{{ user.get_full_name|default:user.username }}</p>
+            <p class="font-weight-light text-muted mb-0">{{ user.email }}</p>
+          </div>
+          <a class="dropdown-item">My Profile</a>
+          <form action="{% url 'admin:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item">Sign Out <i class="dropdown-item-icon ti-power-off"></i></button>
+          </form>
+        </div>
+      </li>
+    </ul>
+    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+      <span class="mdi mdi-menu"></span>
+    </button>
+  </div>
+</nav>

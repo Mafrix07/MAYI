@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Connexion | Mayi Admin</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'dashboard/images/logo_mayi.png' %}">
+    
+    <link rel="stylesheet" href="{% static 'dashboard/assets/vendors/css/vendor.bundle.base.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/assets/css/shared/style.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/mayi-theme.css' %}">
+    <style>
+        .auth-page {
+            background: linear-gradient(135deg, #1B5E20 0%, #0277BD 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            background: white;
+            padding: 45px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-control {
+            height: 50px;
+            border-radius: 10px;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: var(--mayi-primary);
+            box-shadow: 0 0 10px rgba(27,94,32,0.1);
+        }
+        .login-btn {
+            height: 50px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="login-card text-center">
+            <img src="{% static 'dashboard/images/logo_mayi.png' %}" alt="Mayi Logo" style="height: 90px;" class="mb-3">
+            <h3 class="font-weight-bold text-dark mb-1">Espace Administration</h3>
+            <p class="mayi-logo-text mb-4" style="font-size: 1.5rem;">Mayi Togo Tourism</p>
+            
+            {% if form.errors %}
+                <div class="alert alert-danger py-2 mb-4" style="font-size: 0.9rem;">
+                    Identifiant ou mot de passe incorrect.
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group text-left">
+                    <label class="font-weight-semibold">Identifiant</label>
+                    <input type="text" name="username" class="form-control" placeholder="Votre pseudo" required>
+                </div>
+                <div class="form-group text-left mt-3">
+                    <label class="font-weight-semibold">Mot de passe</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-orange btn-block login-btn mt-4 shadow">
+                    Se connecter
+                </button>
+            </form>
+            
+            <p class="mt-4 text-muted small">© 2026 Mayi Togo Tourism — Tous droits réservés</p>
+        </div>
+    </div>
+
+    <script src="{% static 'dashboard/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+</body>
+</html>
