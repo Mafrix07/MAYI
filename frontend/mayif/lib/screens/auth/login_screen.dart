@@ -10,6 +10,8 @@ import 'register_screen.dart';
 import '../home/home_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -20,15 +22,17 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
   String? _errorMessage;
 
   Future<void> _handleLogin() async {
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
   final auth = context.read<AuthProvider>();
   final success = await auth.login(
@@ -129,51 +133,72 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        CustomTextField(
+                    child: Form(
+                      key : _formKey,
+                      child: Column(
+                        children: [
+                          CustomTextField(
                           controller: _emailController,
-                          label: 'Email',
-                          hint: 'votre@email.com',
-                          icon: Icons.email_outlined,
+                          label: 'Email ou nom d\'utilisateur',
+                          hint: 'ex: paola_touriste ou paola@gmail.com',
+                          icon: Icons.person_outline,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ce champ est obligatoire';
+                            }
+                            if (value.trim().length < 3) {
+                              return 'Minimum 3 caractères';
+                            }
+                            return null;
+                          },
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: _passwordController,
-                          label: 'Mot de passe',
-                          hint: '********',
-                          icon: Icons.lock_outline,
-                          isPassword: true,
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              'Mot de passe oublié ?',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                decoration: TextDecoration.underline,
+                          const SizedBox(height: 20),
+                          CustomTextField(
+                            controller: _passwordController,
+                            label: 'Mot de passe',
+                            hint: '********',
+                            icon: Icons.lock_outline,
+                            isPassword: true,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Le mot de passe est obligatoire';
+                              }
+                              if (value.length < 6) {
+                                return 'Minimum 6 caractères';
+                              }
+                              return null;
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                'Mot de passe oublié ?',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        if (_errorMessage != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
+                          const SizedBox(height: 20),
+                          if (_errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                        ),
-                        CustomButton(
-                          text: 'Se connecter',
-                          onPressed: _handleLogin,
-                          isLoading: _isLoading,
-                        ),
-                      ],
+                          CustomButton(
+                            text: 'Se connecter',
+                            onPressed: _handleLogin,
+                            isLoading: _isLoading,
+                          ),
+                        ],
+                      ),
                     ),
                   ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
 
