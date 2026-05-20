@@ -29,6 +29,19 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  static Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
+    final token = await _storage.read(key: 'token');
+    final response = await http.patch(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    return _handleResponse(response);
+  }
+
   static Future<http.Response> get(String endpoint) async {
     final token = await _storage.read(key: 'token');
     final response = await http.get(

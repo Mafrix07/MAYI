@@ -19,15 +19,21 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
   bool get isAuthenticated => _token != null;
 
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
 
   Future<bool> login(String username, String password) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     try {
       final response = await ApiService.post('/auth/login/', {
           'username': username,
           'password': password,
-      }
-      ) ;
+      });
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -35,14 +41,53 @@ class AuthProvider with ChangeNotifier {
         _decodeToken();
         await _storage.write(key: 'token', value: _token);
 
-        // Fetch user profile
         await fetchProfile();
+        _isLoading = false;
         notifyListeners();
         return true;
       }
     } catch (e) {
-      debugPrint('Login error: $e');
+      _errorMessage = e.toString();
     }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String phone,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await ApiService.patch('/auth/me/', {
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+      });
+      
+      debugPrint('Update Profile Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Si le serveur ne renvoie qu'une partie des données, on ne remplace pas tout l'objet
+        if (data.containsKey('id')) {
+          _user = User.fromJson(data);
+        } else {
+          // On recharge le profil complet pour être sûr
+          await fetchProfile();
+        }
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Update profile error: $e');
+    }
+    _isLoading = false;
+    notifyListeners();
     return false;
   }
 

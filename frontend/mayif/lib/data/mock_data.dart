@@ -19,19 +19,19 @@ class Activity {
 final List<Destination> mockDestinations = [
   Destination(
     title: 'Plage de Lomé',
-    image: 'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=600',
+    image: 'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg?auto=compress&cs=tinysrgb&w=600',
     category: 'Plage',
     rating: 4.8,
   ),
   Destination(
     title: 'Mont Agou',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600',
+    image: 'https://images.pexels.com/photos/15187092/pexels-photo-15187092.jpeg?auto=compress&cs=tinysrgb&w=600',
     category: 'Montagne',
     rating: 4.9,
   ),
   Destination(
     title: 'Marché d\'Atakpamé',
-    image: 'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=600',
+    image: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=600',
     category: 'Culture',
     rating: 4.7,
   ),

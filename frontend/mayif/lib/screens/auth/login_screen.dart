@@ -74,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: NetworkImage(
-                  'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=1000&auto=format&fit=crop',
-                ), // Paysage Togo
+                  'https://images.pexels.com/photos/259447/pexels-photo-259447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+                ), // Nouvelle image stable
                 fit: BoxFit.cover,
               ),
             ),
@@ -133,8 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         CustomTextField(
                           controller: _emailController,
-                          label: 'Email',
-                          hint: 'votre@email.com',
+                          label: 'Email ou Nom d\'utilisateur',
+                          hint: '',
                           icon: Icons.email_outlined,
                         ),
                         const SizedBox(height: 20),

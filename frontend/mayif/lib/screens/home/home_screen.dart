@@ -7,6 +7,7 @@ import '../../data/mock_data.dart';
 import '../../widgets/home/hero_banner.dart';
 import '../../widgets/home/destination_card.dart';
 import '../../widgets/home/activity_card.dart';
+import '../touriste/profil/profil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,196 +19,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
+  final List<Widget> _pages = [
+    const HomeContent(),
+    const Center(child: Text('Exploration')),
+    const Center(child: Text('Favoris')),
+    const ProfilScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leadingWidth: 140,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Row(
-            children: [
-              Image.asset('assets/images/logo.png', height: 40),
-              const SizedBox(width: 8),
-              const Text(
-                'Mayi',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.textPrimary),
-            onPressed: () async {
-              await context.read<AuthProvider>().logout();
-              if (mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-              }
-            },
-          ),
-          IconButton(
-            icon: const Badge(
-              label: Text('2'),
-              child: Icon(
-                Icons.notifications_none,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            onPressed: () {},
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              // Barre de recherche Glassmorphism
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Où voulez-vous aller ?',
-                    prefixIcon: Icon(Icons.search, color: AppColors.primary),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              const HeroBanner(),
-
-              const SizedBox(height: 32),
-              _buildSectionTitle('Destinations populaires', 'Voir tout'),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 220,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: mockDestinations.length,
-                  itemBuilder: (context, index) {
-                    return DestinationCard(
-                      destination: mockDestinations[index],
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 32),
-              _buildSectionTitle('Activités touristiques', 'Voir tout'),
-              const SizedBox(height: 16),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1.2,
-                ),
-                itemCount: mockActivities.length,
-                itemBuilder: (context, index) {
-                  return ActivityCard(activity: mockActivities[index]);
-                },
-              ),
-
-              const SizedBox(height: 32),
-              _buildSectionTitle('Recommandations', ''),
-              const SizedBox(height: 16),
-              // Liste verticale simple pour les recommandations
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=200',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Cascade de Kpalimé',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const Text(
-                            'Une merveille naturelle au coeur du Togo.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'À partir de 5.000 F',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 100), // Espace pour la bottom bar
-            ],
-          ),
-        ),
+      // IndexedStack permet de garder l'état des pages (scroll position, etc.)
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(24),
+        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         height: 70,
         decoration: BoxDecoration(
           color: AppColors.textPrimary,
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -221,29 +57,180 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors.transparent,
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.secondary,
-            unselectedItemColor: Colors.white.withValues(alpha: 0.5),
+            unselectedItemColor: Colors.white.withOpacity(0.5),
             showSelectedLabels: false,
             showUnselectedLabels: false,
             elevation: 0,
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: ''),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined),
-                label: '',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border),
-                label: '',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                label: '',
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), label: ''),
+              BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: ''),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
             ],
           ),
         ),
       ),
       extendBody: true,
+    );
+  }
+}
+
+class HomeContent extends StatelessWidget {
+  const HomeContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 30),
+            const SizedBox(width: 8),
+            const Text(
+              'Mayi',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Badge(
+              label: Text('2'),
+              child: Icon(Icons.notifications_none, color: AppColors.textPrimary),
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              // Barre de recherche
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Où voulez-vous aller ?',
+                    prefixIcon: Icon(Icons.search, color: AppColors.primary),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const HeroBanner(),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Populaires', 'Voir tout'),
+              const SizedBox(height: 16),
+              // Destinations avec contrainte de hauteur
+              SizedBox(
+                height: 220,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  itemCount: mockDestinations.length,
+                  itemBuilder: (context, index) {
+                    return DestinationCard(destination: mockDestinations[index]);
+                  },
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Activités', 'Voir tout'),
+              const SizedBox(height: 16),
+              // GridView avec contraintes explicites pour éviter l'overflow
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.3,
+                ),
+                itemCount: mockActivities.length,
+                itemBuilder: (context, index) {
+                  return ActivityCard(activity: mockActivities[index]);
+                },
+              ),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Recommandations', ''),
+              const SizedBox(height: 16),
+              // Carte de recommandation horizontale fixe
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        'https://images.pexels.com/photos/259447/pexels-photo-259447.jpeg?auto=compress&cs=tinysrgb&w=200',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cascade de Kpalimé',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          Text(
+                            'Une merveille naturelle au coeur du Togo.',
+                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'À partir de 5.000 F',
+                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 120), // Espace pour la bottom bar flottante
+            ],
+          ),
+        ),
+      ),
     );
   }
 
