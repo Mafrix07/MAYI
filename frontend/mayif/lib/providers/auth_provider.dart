@@ -1,7 +1,9 @@
 import '../utils/jwt_parser.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 
@@ -12,6 +14,15 @@ class AuthProvider with ChangeNotifier {
   String? get role => _role;
   bool _isReady = false;
   bool get isReady => _isReady;
+
+  AuthProvider() {
+    ApiService.onUnauthorized = () {
+      _token = null;
+      _user = null;
+      _role = null;
+      notifyListeners();
+    };
+  }
 
   final _storage = const FlutterSecureStorage();
 
@@ -37,17 +48,24 @@ class AuthProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _token = data['access'];
-        _decodeToken();
-        await _storage.write(key: 'token', value: _token);
+        if (data.containsKey('access')) {
+          _token = data['access'];
+          _decodeToken();
+          await _storage.write(key: 'token', value: _token);
 
-        await fetchProfile();
-        _isLoading = false;
-        notifyListeners();
-        return true;
+          await fetchProfile();
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        } else {
+          _errorMessage = "Réponse invalide (token manquant)";
+        }
+      } else {
+        final data = jsonDecode(response.body);
+        _errorMessage = data['detail'] ?? data['message'] ?? 'Erreur lors de la connexion (${response.statusCode})';
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = "Erreur réseau ou serveur : $e";
     }
     _isLoading = false;
     notifyListeners();
@@ -65,18 +83,14 @@ class AuthProvider with ChangeNotifier {
       final response = await ApiService.patch('/auth/me/', {
         'first_name': firstName,
         'last_name': lastName,
-        'phone': phone,
+        'telephone': phone,
       });
-      
-      debugPrint('Update Profile Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Si le serveur ne renvoie qu'une partie des données, on ne remplace pas tout l'objet
         if (data.containsKey('id')) {
           _user = User.fromJson(data);
         } else {
-          // On recharge le profil complet pour être sûr
           await fetchProfile();
         }
         _isLoading = false;
@@ -84,7 +98,34 @@ class AuthProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Update profile error: $e');
+      // Log silencieux pour la production
+    }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> uploadProfilePhoto(XFile xFile) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final bytes = await xFile.readAsBytes();
+      final response = await ApiService.uploadFile(
+        '/auth/me/photo/',
+        'photo_profil',
+        filePath: kIsWeb ? null : xFile.path,
+        bytes: bytes,
+        fileName: xFile.name,
+      );
+      
+      if (response.statusCode == 200) {
+        await fetchProfile();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      // Log silencieux
     }
     _isLoading = false;
     notifyListeners();
@@ -92,14 +133,24 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> register(Map<String, dynamic> userData) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     try {
       final response = await ApiService.post('/auth/register/', userData);
       if (response.statusCode == 201) {
+        _isLoading = false;
+        notifyListeners();
         return true;
+      } else {
+        final data = jsonDecode(response.body);
+        _errorMessage = data['detail'] ?? data['message'] ?? 'Erreur lors de l\'inscription (${response.statusCode})';
       }
     } catch (e) {
-      debugPrint('Register error: $e');
+      _errorMessage = "Erreur réseau ou serveur : $e";
     }
+    _isLoading = false;
+    notifyListeners();
     return false;
   }
 
@@ -112,7 +163,7 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Fetch profile error: $e');
+      // Log silencieux
     }
   }
 
@@ -133,16 +184,17 @@ class AuthProvider with ChangeNotifier {
       }
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
-      debugPrint('Auto-login error: $e');
+      // Log silencieux
     } finally {
       _isReady = true;
       notifyListeners();
     }
   }
+
   void _decodeToken() {
-  if (_token != null) {
-    final payload = JwtParser.parse(_token!);
-    _role = payload['role'];
+    if (_token != null) {
+      final payload = JwtParser.parse(_token!);
+      _role = payload['role'];
+    }
   }
-}
 }

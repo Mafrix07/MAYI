@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../widgets/common/custom_button.dart';
 import '../../../widgets/common/custom_text_field.dart';
 
@@ -35,7 +35,7 @@ class ProfilScreen extends StatelessWidget {
   void _showEditSheet(BuildContext context, AuthProvider auth) {
     final firstNameController = TextEditingController(text: auth.user?.firstName);
     final lastNameController = TextEditingController(text: auth.user?.lastName);
-    final phoneController = TextEditingController(text: auth.user?.phone);
+    final phoneController = TextEditingController(text: auth.user?.telephone);
 
     showModalBottomSheet(
       context: context,
@@ -81,6 +81,19 @@ class ProfilScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _pickAndUploadImage(BuildContext context, AuthProvider auth) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final success = await auth.uploadProfilePhoto(image);
+      if (success && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo mise à jour !'), backgroundColor: Colors.green),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -107,19 +120,35 @@ class ProfilScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 30),
                   child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white24,
-                        child: ClipOval(
-                          child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) 
-                            ? CachedNetworkImage(
-                                imageUrl: user.photoUrl!,
-                                width: 100, height: 100, fit: BoxFit.cover,
-                                placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
-                                errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
-                              )
-                            : Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
-                        ),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.white24,
+                            child: ClipOval(
+                              child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) 
+                                ? CachedNetworkImage(
+                                    imageUrl: user.photoUrl!,
+                                    width: 100, height: 100, fit: BoxFit.cover,
+                                    placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
+                                    errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
+                                  )
+                                : Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => _pickAndUploadImage(context, auth),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                child: const Icon(Icons.camera_alt, color: Color(0xFF006B3F), size: 20),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 15),
                       Text('${user?.firstName ?? ''} ${user?.lastName ?? ''}', 
@@ -168,7 +197,7 @@ class ProfilScreen extends StatelessWidget {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: (color ?? const Color(0xFF006B3F)).withOpacity(0.1), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: (color ?? const Color(0xFF006B3F)).withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Icon(icon, color: color ?? const Color(0xFF006B3F)),
       ),
       title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),

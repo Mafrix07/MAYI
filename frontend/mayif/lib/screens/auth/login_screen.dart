@@ -6,8 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../services/api_service.dart';
 import 'register_screen.dart';
-import '../home/home_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -25,41 +25,45 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   Future<void> _handleLogin() async {
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
+    // ── Validation côté client ──────────────────────────────────────────────
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-  final auth = context.read<AuthProvider>();
-  final success = await auth.login(
-    _emailController.text.trim(),
-    _passwordController.text.trim(),
-  );
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Veuillez remplir tous les champs.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.login(email, password);
 
   if (!mounted) return;
 
   if (success) {
-  final role = auth.role;
+    final role = auth.role;
 
-  if (role == 'PROFESSIONNEL') {
-    Navigator.pushReplacementNamed(context, '/dashboard-pro');
-
-  } else if (role == 'STAFF' || role == 'ADMIN') {
-    // Ouvrir le dashboard Django dans le navigateur
-    final token = auth.token;
-
-    final url = Uri.parse('http://127.0.0.1:8000/dashboard/auto-login/?token=$token');
-    if (await canLaunchUrl(url)) {
-    await launchUrl(url, mode: LaunchMode.externalApplication);
-  }
-    // Rester sur LoginScreen (pas de redirection Flutter)
-    setState(() => _errorMessage = null);
-
+    if (role == 'PROFESSIONNEL') {
+      Navigator.pushReplacementNamed(context, '/dashboard-pro');
+    } else if (role == 'STAFF' || role == 'ADMIN') {
+      final token = auth.token;
+      final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+      final url = Uri.parse('$baseUrl/dashboard/auto-login/?token=$token');
+      
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+      setState(() => _errorMessage = null);
+    } else {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   } else {
-    // TOURISTE
-    Navigator.pushReplacementNamed(context, '/home');
+    setState(() => _errorMessage = auth.errorMessage);
   }
-}
 
   setState(() => _isLoading = false);
 }
@@ -73,9 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://images.pexels.com/photos/259447/pexels-photo-259447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-                ), // Nouvelle image stable
+                image: AssetImage('assets/images/monument_1.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -148,8 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
-                            child: Text(
+                            onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
+                            child: const Text(
                               'Mot de passe oublié ?',
                               style: TextStyle(
                                 color: AppColors.primary,

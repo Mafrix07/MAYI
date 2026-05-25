@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from users.views import MyTokenObtainPairView, InscriptionView, MonProfilView
+from users.views import MyTokenObtainPairView, InscriptionView, MonProfilView, ProfilePhotoView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -31,6 +32,7 @@ urlpatterns = [
 
     # Profil
     path('api/auth/me/',       MonProfilView.as_view(),         name='mon_profil'),
+    path('api/auth/me/photo/', ProfilePhotoView.as_view(),      name='utilisateur-photo'),
 
     # Apps
     path('api/', include('services.urls')),

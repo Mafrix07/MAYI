@@ -32,7 +32,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "10.0.2.2"
+    "10.0.2.2",
+    "localhost",
 ]
 
 # En developpement : autoriser toutes les origines
