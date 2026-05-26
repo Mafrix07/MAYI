@@ -6,11 +6,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/home/hero_banner.dart';
-import '../../widgets/home/destination_card.dart';
 import '../../widgets/home/activity_card.dart';
+import '../../widgets/home/service_card.dart';
 import '../../data/mock_data.dart';
 import '../touriste/profil/profil_screen.dart';
 import '../touriste/reservations/formulaire_reservation_screen.dart';
+import '../touriste/recherche/service_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,8 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomeContent(),
-    const Center(child: Text('Exploration')),  // Paola — S2
-    const Center(child: Text('Favoris')),       // Paola — S2
+    const Center(child: Text('Exploration')),
+    const Center(child: Text('Favoris')),
     const ProfilScreen(),
   ];
 
@@ -74,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ─── Contenu principal de l'accueil ─────────────────────────────────────────
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -88,11 +88,9 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    // Charger les services au démarrage
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceProvider>().fetchServices();
     });
-    // Infinite scroll
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -168,8 +166,6 @@ class _HomeContentState extends State<HomeContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
-
-                // ── Barre de recherche ──────────────────────────────────
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -192,11 +188,8 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 const HeroBanner(),
                 const SizedBox(height: 32),
-
-                // ── Section Services populaires (API réelle) ────────────
                 _SectionTitle(title: 'Populaires', action: 'Voir tout', onTap: () {}),
                 const SizedBox(height: 16),
                 Consumer<ServiceProvider>(
@@ -206,7 +199,7 @@ class _HomeContentState extends State<HomeContent> {
                     }
                     if (sp.hasError && sp.services.isEmpty) {
                       return _ErrorWidget(
-                        message: sp.errorMessage ?? 'Erreur',
+                        message: sp.errorMessage ?? 'Erreur de connexion',
                         onRetry: () => sp.fetchServices(),
                       );
                     }
@@ -220,28 +213,33 @@ class _HomeContentState extends State<HomeContent> {
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         clipBehavior: Clip.none,
-                        itemCount: sp.services.length,
+                        itemCount: sp.services.length + (sp.hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          final service = sp.services[index];
-                          // Adapter Service → Destination pour le widget existant
-                          return DestinationCard(
-                            destination: Destination(
-                              title: service.titre,
-                              image: service.imagePrincipale ??
-                                  'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
-                              category: service.categorie,
-                              rating: 4.5,
-                            ),
+                          if (index == sp.services.length) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+                          }
+                          return ServiceCard(
+                            service: sp.services[index],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ServiceDetailScreen(service: sp.services[index]),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
                     );
                   },
                 ),
-
                 const SizedBox(height: 32),
-
-                // ── Section Activités (mock en attendant Paola S2) ──────
                 _SectionTitle(title: 'Activités', action: 'Voir tout', onTap: () {}),
                 const SizedBox(height: 16),
                 GridView.builder(
@@ -258,7 +256,6 @@ class _HomeContentState extends State<HomeContent> {
                     return ActivityCard(activity: mockActivities[index]);
                   },
                 ),
-
                 const SizedBox(height: 120),
               ],
             ),
@@ -269,7 +266,6 @@ class _HomeContentState extends State<HomeContent> {
   }
 }
 
-// ─── Widgets utilitaires ────────────────────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   final String action;
@@ -301,7 +297,6 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// Shimmer de chargement
 class _ServicesShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -315,7 +310,7 @@ class _ServicesShimmer extends StatelessWidget {
           highlightColor: Colors.grey[100]!,
           child: Container(
             width: 180,
-            margin: const EdgeInsets.only(right: 16),
+            margin: const EdgeInsets.only(right: 16, bottom: 8, top: 8),
             decoration: BoxDecoration(
                 color: Colors.white, borderRadius: BorderRadius.circular(24)),
           ),
@@ -325,7 +320,6 @@ class _ServicesShimmer extends StatelessWidget {
   }
 }
 
-// État d'erreur
 class _ErrorWidget extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -355,14 +349,15 @@ class _ErrorWidget extends StatelessWidget {
   }
 }
 
-// État vide
 class _EmptyWidget extends StatelessWidget {
   final String message;
   const _EmptyWidget({required this.message});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
         children: [
           const Icon(Icons.search_off, size: 48, color: Colors.grey),

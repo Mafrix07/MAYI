@@ -109,7 +109,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                   title: 'Mon Profil',
                   subtitle: 'Modifier mes infos',
                   color: Colors.purple,
-                  onTap: () {},
+                  onTap: () => Navigator.pushNamed(context, '/profile'),
                 ),
               ],
             ),

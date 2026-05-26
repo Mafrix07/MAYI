@@ -72,33 +72,40 @@ class _FormulaireReservationScreenState
       _errorMessage = null;
     });
 
-    final reservationId = await ReservationService.create({
-      'service': widget.serviceId,
-      'date_debut': DateFormat('yyyy-MM-dd').format(_dateDebut!),
-      if (_dateFin != null)
-        'date_fin': DateFormat('yyyy-MM-dd').format(_dateFin!),
-      'nombre_personnes': _nombrePersonnes,
-    });
+    try {
+      final reservationId = await ReservationService.create({
+        'service': widget.serviceId,
+        'date_debut': DateFormat('yyyy-MM-dd').format(_dateDebut!),
+        if (_dateFin != null)
+          'date_fin': DateFormat('yyyy-MM-dd').format(_dateFin!),
+        'nombre_personnes': _nombrePersonnes,
+      });
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (reservationId != null) {
-      // Passer à l'écran de paiement
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PaiementScreen(
-            reservationId: reservationId,
-            montantAcompte: widget.montantAcompte,
-            serviceTitre: widget.serviceTitre,
+      if (reservationId != null) {
+        // Passer à l'écran de paiement
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PaiementScreen(
+              reservationId: reservationId,
+              montantAcompte: widget.montantAcompte,
+              serviceTitre: widget.serviceTitre,
+            ),
           ),
-        ),
-      );
-    } else {
-      setState(
-          () => _errorMessage = 'Erreur lors de la réservation. Réessayez.');
+        );
+      } else {
+        setState(
+            () => _errorMessage = 'Erreur lors de la réservation. Réessayez.');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Une erreur est survenue : $e';
+      });
     }
   }
 
