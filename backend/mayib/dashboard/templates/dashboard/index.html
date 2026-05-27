@@ -1,0 +1,223 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | MAYI{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+    <div class="card card-statistics">
+      <div class="card-body">
+        <div class="clearfix">
+          <div class="float-left">
+            <i class="mdi mdi-account-location text-info icon-lg"></i>
+          </div>
+          <div class="float-right">
+            <p class="mb-0 text-right">Utilisateurs</p>
+            <div class="fluid-container">
+              <h3 class="font-weight-medium text-right mb-0">{{ total_users }}</h3>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mt-3 mb-0">
+          <i class="mdi mdi-account mr-1" aria-hidden="true"></i> Total inscrits
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+    <div class="card card-statistics">
+      <div class="card-body">
+        <div class="clearfix">
+          <div class="float-left">
+            <i class="mdi mdi-receipt text-warning icon-lg"></i>
+          </div>
+          <div class="float-right">
+            <p class="mb-0 text-right">Réservations</p>
+            <div class="fluid-container">
+              <h3 class="font-weight-medium text-right mb-0">{{ reservations_this_month }}</h3>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mt-3 mb-0">
+          <i class="mdi mdi-bookmark-outline mr-1" aria-hidden="true"></i> Ce mois-ci
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+    <div class="card card-statistics">
+      <div class="card-body">
+        <div class="clearfix">
+          <div class="float-left">
+            <i class="mdi mdi-poll-box text-success icon-lg"></i>
+          </div>
+          <div class="float-right">
+            <p class="mb-0 text-right">Services</p>
+            <div class="fluid-container">
+              <h3 class="font-weight-medium text-right mb-0">{{ total_services }}</h3>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mt-3 mb-0">
+          <i class="mdi mdi-calendar mr-1" aria-hidden="true"></i> Services actifs
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+    <div class="card card-statistics">
+      <div class="card-body">
+        <div class="clearfix">
+          <div class="float-left">
+            <i class="mdi mdi-comment-account text-danger icon-lg"></i>
+          </div>
+          <div class="float-right">
+            <p class="mb-0 text-right">Modération</p>
+            <div class="fluid-container">
+              <h3 class="font-weight-medium text-right mb-0">{{ pending_reviews }}</h3>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mt-3 mb-0">
+          <i class="mdi mdi-alert-circle mr-1" aria-hidden="true"></i> Avis signalés
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-7 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Évolution des Réservations (30 jours)</h4>
+        <canvas id="reservationsChart" height="150"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Répartition des Services</h4>
+        <canvas id="servicesChart" height="150"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Activités Récentes</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Dernières Réservations</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in recent_reservations %}
+                            <tr>
+                                <td>{{ res.touriste.username }}</td>
+                                <td>{{ res.service.nom }}</td>
+                                <td><label class="badge badge-info">{{ res.get_statut_display }}</label></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3">Aucune réservation.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Nouveaux Utilisateurs</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Rôle</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in recent_users %}
+                            <tr>
+                                <td>{{ u.username }}</td>
+                                <td>{{ u.get_role_display }}</td>
+                                <td>{{ u.date_creation|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3">Aucun utilisateur.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  $(function() {
+    // Reservations Chart
+    var ctxRes = document.getElementById('reservationsChart').getContext('2d');
+    var reservationsChart = new Chart(ctxRes, {
+        type: 'line',
+        data: {
+            labels: {{ chart_res_labels|safe }},
+            datasets: [{
+                label: 'Réservations',
+                data: {{ chart_res_data|safe }},
+                backgroundColor: 'rgba(88, 103, 221, 0.2)',
+                borderColor: 'rgba(88, 103, 221, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Services Chart
+    var ctxSer = document.getElementById('servicesChart').getContext('2d');
+    var servicesChart = new Chart(ctxSer, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_service_labels|safe }},
+            datasets: [{
+                data: {{ chart_service_data|safe }},
+                backgroundColor: [
+                    '#ff6258',
+                    '#ffaf00',
+                    '#71c016',
+                    '#4caf50',
+                    '#03a9f4'
+                ]
+            }]
+        }
+    });
+  });
+</script>
+{% endblock %}

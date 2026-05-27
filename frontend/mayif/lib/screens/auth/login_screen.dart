@@ -1,11 +1,14 @@
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../services/api_service.dart';
 import 'register_screen.dart';
-import '../home/home_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +21,53 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _handleLogin() async {
+    // ── Validation côté client ──────────────────────────────────────────────
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Veuillez remplir tous les champs.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.login(email, password);
+
+  if (!mounted) return;
+
+  if (success) {
+    final role = auth.role;
+
+    if (role == 'PROFESSIONNEL') {
+      Navigator.pushReplacementNamed(context, '/dashboard-pro');
+    } else if (role == 'STAFF' || role == 'ADMIN') {
+      final token = auth.token;
+      final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+      final url = Uri.parse('$baseUrl/dashboard/auto-login/?token=$token');
+      
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+      setState(() => _errorMessage = null);
+    } else {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  } else {
+    setState(() => _errorMessage = auth.errorMessage);
+  }
+
+  setState(() => _isLoading = false);
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,9 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=1000&auto=format&fit=crop',
-                ), // Paysage Togo
+                image: AssetImage('assets/images/monument_1.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -87,8 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         CustomTextField(
                           controller: _emailController,
-                          label: 'Email',
-                          hint: 'votre@email.com',
+                          label: 'Email ou Nom d\'utilisateur',
+                          hint: '',
                           icon: Icons.email_outlined,
                         ),
                         const SizedBox(height: 20),
@@ -102,8 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
-                            child: Text(
+                            onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
+                            child: const Text(
                               'Mot de passe oublié ?',
                               style: TextStyle(
                                 color: AppColors.primary,
@@ -113,16 +161,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         CustomButton(
                           text: 'Se connecter',
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _handleLogin,
+                          isLoading: _isLoading,
                         ),
                       ],
                     ),

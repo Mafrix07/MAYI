@@ -1,42 +1,46 @@
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_service.dart';
 
 class ReservationService {
-  static const _storage = FlutterSecureStorage();
-
-  // ÉTAPE 1 : Créer la réservation (renvoie l'ID de la réservation)
+  // ── Créer une réservation → retourne l'ID ────────────────────────────────
   static Future<int?> create(Map<String, dynamic> data) async {
     final response = await ApiService.post('/reservations/', data);
-
+    
     if (response.statusCode == 201) {
       return jsonDecode(response.body)['id'];
     }
-
     return null;
   }
 
-  // ÉTAPE 2 : Envoyer la capture d'écran (Image)
-  static Future<bool> uploadProof(int reservationId, String filePath) async {
-    final token = await _storage.read(key: 'token');
+  // ── Lister mes réservations ───────────────────────────────────────────────
+  static Future<List<dynamic>> getMesReservations() async {
+    final response = await ApiService.get('/reservations/');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['results'] ?? data;
+    }
+    return [];
+  }
 
-    final uri = Uri.parse(
-      '${ApiService.baseUrl}/reservations/$reservationId/confirmer_paiement/',
+  // ── Annuler une réservation ───────────────────────────────────────────────
+  static Future<bool> annuler(int reservationId) async {
+    final response =
+        await ApiService.post('/reservations/$reservationId/annuler/', {});
+    return response.statusCode == 200;
+  }
+
+  // ── Upload capture écran paiement ─────────────────────────────────────────
+  static Future<bool> uploadProof(int reservationId, XFile xFile) async {
+    final bytes = await xFile.readAsBytes();
+    final response = await ApiService.uploadFile(
+      '/reservations/$reservationId/confirmer_paiement/',
+      'capture_ecran',
+      filePath: kIsWeb ? null : xFile.path,
+      bytes: bytes,
+      fileName: xFile.name,
     );
-
-    var request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
-      ..files.add(
-        await http.MultipartFile.fromPath(
-          'capture_ecran',
-          filePath,
-        ),
-      );
-
-    final response = await request.send();
-
     return response.statusCode == 200;
   }
 }

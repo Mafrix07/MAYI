@@ -17,19 +17,19 @@ class _HeroBannerState extends State<HeroBanner> {
   final List<Map<String, String>> _slides = [
     {
       'image':
-          'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=800',
+          'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg?auto=compress&cs=tinysrgb&w=800',
       'title': 'Découvrez Lomé',
       'subtitle': 'La ville aux mille sourires',
     },
     {
       'image':
-          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800',
+          'https://images.pexels.com/photos/15187092/pexels-photo-15187092.jpeg?auto=compress&cs=tinysrgb&w=800',
       'title': 'Mont Agou',
       'subtitle': 'Le toit du Togo',
     },
     {
       'image':
-          'https://images.unsplash.com/photo-1541411133283-42e77b102925?q=80&w=800',
+          'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800',
       'title': 'Culture Koutammakou',
       'subtitle': 'Patrimoine mondial de l\'UNESCO',
     },

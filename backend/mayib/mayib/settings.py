@@ -32,7 +32,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "10.0.2.2"
+    "10.0.2.2",
+    "localhost",
 ]
 
 # En developpement : autoriser toutes les origines
@@ -87,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dashboard.context_processors.dashboard_context',
             ],
         },
     },
@@ -202,3 +204,7 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = 'dashboard:index'
+LOGOUT_REDIRECT_URL = 'dashboard:login'
+LOGIN_URL = 'dashboard:login'

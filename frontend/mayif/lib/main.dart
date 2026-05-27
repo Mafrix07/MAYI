@@ -1,29 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frontend_new/providers/service_provider.dart';
-import 'core/theme/app_theme.dart';
-import 'screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
+import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/service_provider.dart';
+import 'providers/avis_provider.dart';
+import 'providers/favorite_provider.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/recherche/search_screen.dart';
+import 'screens/favoris/favoris_screen.dart';
+import 'screens/pro/dashboard_pro_screen.dart';
+import 'screens/pro/mes_services/mes_services_screen.dart';
+import 'screens/pro/reservations_recues/reservations_recues_screen.dart';
+import 'screens/touriste/reservations/mes_reservations_screen.dart';
+import 'screens/touriste/profil/profil_screen.dart';
+import 'screens/splash_screen.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Rendre la barre de statut transparente
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-
   runApp(
     MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => AuthProvider()..tryAutoLogin()),
-          ChangeNotifierProvider(create: (_) => ServiceProvider()),
-        ],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()..tryAutoLogin()),
+        ChangeNotifierProvider(create: (_) => ServiceProvider()),
+        ChangeNotifierProvider(create: (_) => AvisProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+      ],
       child: const MayiTogoApp(),
     ),
   );
@@ -35,15 +47,37 @@ class MayiTogoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Mayi Togo Tourism',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.premiumTheme,
+      routes: {
+        '/login':                (context) => const LoginScreen(),
+        '/forgot-password':      (context) => const ForgotPasswordScreen(),
+        '/profile':              (context) => const ProfilScreen(),
+        '/home':                 (context) => const HomeScreen(),
+        '/search':               (context) => const SearchScreen(),
+        '/favoris':              (context) => const FavorisScreen(),
+        '/dashboard-pro':        (context) => const DashboardProScreen(),
+        '/admin':                (context) => const HomeScreen(), // temporaire
+        // Touriste
+        '/reservations':         (context) => const MesReservationsScreen(),
+        // Pro — Semaine 3
+        '/pro/mes-services':     (context) => const MesServicesScreen(),
+        '/pro/reservations':     (context) => const ReservationsRecuesScreen(),
+      },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
-          return auth.isAuthenticated
-              ? const HomeScreen()
-              : const LoginScreen();
-        }
+          if (!auth.isReady) return const SplashScreen();
+          if (!auth.isAuthenticated) return const LoginScreen();
+          // Redirection selon le rôle
+          switch (auth.role) {
+            case 'PROFESSIONNEL':
+              return const DashboardProScreen();
+            default:
+              return const HomeScreen();
+          }
+        },
       ),
     );
   }

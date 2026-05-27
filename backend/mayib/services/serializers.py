@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from .models import Service, PhotoService
 from users.models import ProfilProfessionnel
 from users.serializers import ProfilProSerializer
@@ -15,12 +15,9 @@ class ServiceSerializer(serializers.ModelSerializer):
         source='professionnel',
         write_only=True
     )
-    # Note moyenne avec une décimale pour l'affichage UI (annotée dans le ViewSet)
-    note_moyenne = serializers.FloatField(read_only=True) 
+    note_moyenne = serializers.FloatField(source='api_note_moyenne', read_only=True)
     photos = PhotoServiceSerializer(many=True, read_only=True)
     photo_principale = serializers.SerializerMethodField()
-    
-    # Précision décimale pour Flutter
     prix = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=True)
 
     class Meta:
@@ -33,12 +30,9 @@ class ServiceSerializer(serializers.ModelSerializer):
         ]
 
     def get_photo_principale(self, obj):
-        # On essaie d'abord de récupérer la photo marquée comme principale
-        # Sinon on prend la première de la galerie
         photo = obj.photos.filter(est_principale=True).first()
         if not photo:
             photo = obj.photos.first()
-        
         if photo:
             return PhotoServiceSerializer(photo, context=self.context).data
         return None

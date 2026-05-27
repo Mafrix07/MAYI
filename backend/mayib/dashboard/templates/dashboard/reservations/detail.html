@@ -1,0 +1,117 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Détail Réservation #{{ res_obj.pk }}{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="breadcrumb-item"><a href="{% url 'dashboard:reservation_list' %}">Réservations</a></li>
+  <li class="breadcrumb-item active" aria-current="page">#{{ res_obj.pk }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="card-title">Détails de la Réservation #{{ res_obj.pk }}</h4>
+                    <label class="badge 
+                        {% if res_obj.statut == 'CONFIRMEE' %}badge-success
+                        {% elif res_obj.statut == 'ANNULEE' %}badge-danger
+                        {% elif res_obj.statut == 'TERMINEE' %}badge-primary
+                        {% else %}badge-warning{% endif %}">
+                        {{ res_obj.get_statut_display }}
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Informations Générales</h5>
+                        <p><strong>Service:</strong> {{ res_obj.service.nom }}</p>
+                        <p><strong>Date début:</strong> {{ res_obj.date_debut|date:"d/m/Y" }}</p>
+                        {% if res_obj.date_fin %}
+                            <p><strong>Date fin:</strong> {{ res_obj.date_fin|date:"d/m/Y" }}</p>
+                        {% endif %}
+                        <p><strong>Nombre de personnes:</strong> {{ res_obj.nombre_personnes }}</p>
+                        <p><strong>Message client:</strong><br><span class="text-muted">{{ res_obj.message|default:"Aucun message." }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Détails Financiers</h5>
+                        <p><strong>Prix Total:</strong> {{ res_obj.prix_total }} FCFA</p>
+                        <p><strong>Acompte ({{ res_obj.get_type_acompte_display }}):</strong> {{ res_obj.valeur_acompte }}</p>
+                        <p class="text-primary"><strong>Montant Acompte:</strong> {{ res_obj.montant_acompte }} FCFA</p>
+                        <p class="text-danger"><strong>Solde à payer:</strong> {{ res_obj.solde_restant }} FCFA</p>
+                        <p><strong>Solde payé:</strong> {% if res_obj.solde_paye %}<span class="text-success">OUI</span>{% else %}<span class="text-warning">NON</span>{% endif %}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Paiement Acompte</h5>
+                        {% if paiement_acompte %}
+                            <p><strong>Opérateur:</strong> {{ paiement_acompte.get_operateur_display }}</p>
+                            <p><strong>Référence:</strong> {{ paiement_acompte.reference_transaction }}</p>
+                            <p><strong>Statut Paiement:</strong> 
+                                <span class="badge {% if paiement_acompte.statut_paiement == 'VALIDE' %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ paiement_acompte.get_statut_paiement_display }}
+                                </span>
+                            </p>
+                            {% if paiement_acompte.capture_ecran %}
+                                <p><strong>Preuve:</strong> <a href="{{ paiement_acompte.capture_ecran.url }}" target="_blank">Voir l'image</a></p>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">Aucun paiement d'acompte enregistré.</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Paiement Solde (sur place)</h5>
+                        {% if paiement_solde %}
+                            <p><strong>Mode:</strong> {{ paiement_solde.get_mode_paiement_display }}</p>
+                            <p><strong>Montant payé:</strong> {{ paiement_solde.montant }} FCFA</p>
+                            <p><strong>Date:</strong> {{ paiement_solde.date_paiement|date:"d/m/Y H:i" }}</p>
+                        {% else %}
+                            <p class="text-muted">Le solde n'a pas encore été réglé.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="card-title">Client</h4>
+                <div class="text-center">
+                    <img src="{% if res_obj.touriste.photo_profil %}{{ res_obj.touriste.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" class="img-sm rounded-circle mb-2">
+                    <h6>{{ res_obj.touriste.username }}</h6>
+                    <p class="small">{{ res_obj.touriste.email }}</p>
+                    <a href="{% url 'dashboard:user_detail' res_obj.touriste.pk %}" class="btn btn-xs btn-outline-primary">Voir Profil</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Actions Admin</h4>
+                <form action="{% url 'dashboard:reservation_change_status' res_obj.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Changer le statut</label>
+                        <select name="status" class="form-control mb-3">
+                            {% for val, label in statuses %}
+                                <option value="{{ val }}" {% if res_obj.statut == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Mettre à jour</button>
+                </form>
+                <hr>
+                <button class="btn btn-outline-danger btn-block">Signaler un litige</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

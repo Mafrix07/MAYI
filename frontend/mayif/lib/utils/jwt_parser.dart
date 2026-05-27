@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class JWTPaserver {
+class JwtParser {
   static Map<String, dynamic> parse(String token) {
     final parts = token.split('.');
     if (parts.length != 3) throw Exception('Invalid token');

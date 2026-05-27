@@ -3,49 +3,44 @@ class Service {
   final String titre;
   final String description;
   final String categorie;
-  final double prixTotal;
-  final double montantAcompte;
-  final String adresse;
+  final double prix;
   final String? imagePrincipale;
-  final int prestataireId;
+  final String ville;
+  final double noteMoyenne;
+  final bool estDisponible;
+  final double montantAcompte;
 
   Service({
     required this.id,
     required this.titre,
     required this.description,
     required this.categorie,
-    required this.prixTotal,
-    required this.montantAcompte,
-    required this.adresse,
+    required this.prix,
     this.imagePrincipale,
-    required this.prestataireId,
+    required this.ville,
+    required this.noteMoyenne,
+    required this.estDisponible,
+    required this.montantAcompte,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
+    // Récupération de l'image (soit de photo_principale object, soit de image path)
+    String? img;
+    if (json['photo_principale'] != null) {
+      img = json['photo_principale']['image'];
+    }
+
     return Service(
       id: json['id'],
-      titre: json['titre'],
-      description: json['description'],
-      categorie: json['categorie'],
-      prixTotal: double.parse(json['prix_total'].toString()),
-      montantAcompte: double.parse(json['montant_acompte'].toString()),
-      adresse: json['adresse'],
-      imagePrincipale: json['image_principale'],
-      prestataireId: json['prestataire'],
+      titre: json['nom'] ?? 'Sans nom', // Django: 'nom'
+      description: json['description'] ?? '',
+      categorie: json['type_service'] ?? 'SERVICE', // Django: 'type_service'
+      prix: double.parse((json['prix'] ?? 0).toString()),
+      imagePrincipale: img,
+      ville: json['adresse'] ?? 'Togo', // Utilise l'adresse comme ville
+      noteMoyenne: double.parse((json['note_moyenne'] ?? 0).toString()),
+      estDisponible: json['est_actif'] ?? true, // Django: 'est_actif'
+      montantAcompte: double.parse((json['montant_acompte'] ?? 5000).toString()),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'titre': titre,
-      'description': description,
-      'categorie': categorie,
-      'prix_total': prixTotal,
-      'montant_acompte': montantAcompte,
-      'adresse': adresse,
-      'image_principale': imagePrincipale,
-      'prestataire': prestataireId,
-    };
   }
 }

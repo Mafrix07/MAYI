@@ -1,0 +1,117 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Détails Service | {{ service_obj.nom }}{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="breadcrumb-item"><a href="{% url 'dashboard:service_list' %}">Services</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ service_obj.nom }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="card-title">{{ service_obj.nom }}</h4>
+            <div>
+                {% if service_obj.est_signale %}
+                    <span class="badge badge-danger mr-2">SIGNALÉ</span>
+                {% endif %}
+                <label class="badge {% if service_obj.est_actif %}badge-success{% else %}badge-secondary{% endif %}">
+                    {% if service_obj.est_actif %}Actif{% else %}Inactif{% endif %}
+                </label>
+            </div>
+        </div>
+
+        <div id="serviceCarousel" class="carousel slide mb-4" data-ride="carousel">
+            <div class="carousel-inner">
+                {% for photo in photos %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ photo.image.url }}" class="d-block w-100" alt="{{ photo.legende|default:service_obj.nom }}" style="height: 400px; object-fit: cover;">
+                </div>
+                {% empty %}
+                <div class="carousel-item active">
+                    <img src="{% static 'dashboard/assets/images/dashboard/img_1.jpg' %}" class="d-block w-100" alt="Pas d'image" style="height: 400px; object-fit: cover;">
+                </div>
+                {% endfor %}
+            </div>
+            {% if photos.count > 1 %}
+            <a class="carousel-control-prev" href="#serviceCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Précédent</span>
+            </a>
+            <a class="carousel-control-next" href="#serviceCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Suivant</span>
+            </a>
+            {% endif %}
+        </div>
+
+        <h5>Description</h5>
+        <p class="text-muted">{{ service_obj.description|linebreaks }}</p>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <p><strong>Type:</strong> {{ service_obj.get_type_service_display }}</p>
+                <p><strong>Prix:</strong> {{ service_obj.prix }} FCFA</p>
+                <p><strong>Adresse:</strong> {{ service_obj.adresse|default:"Non renseignée" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Horaires:</strong> {{ service_obj.horaire_ouverture|default:"--" }} - {{ service_obj.horaire_fermeture|default:"--" }}</p>
+                <p><strong>Livraison:</strong> {% if service_obj.options_livraison %}Disponible{% else %}Non disponible{% endif %}</p>
+                <p><strong>Note moyenne:</strong> {{ service_obj.note_moyenne|default:"Pas encore d'avis" }} / 5</p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Prestataire</h4>
+        <div class="text-center mb-4">
+            <img src="{% if service_obj.professionnel.utilisateur.photo_profil %}{{ service_obj.professionnel.utilisateur.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" alt="profile" class="img-sm rounded-circle mb-2">
+            <h6>{{ service_obj.professionnel.nom_etablissement }}</h6>
+            <p class="small text-muted">Par {{ service_obj.professionnel.utilisateur.get_full_name|default:service_obj.professionnel.utilisateur.username }}</p>
+            <a href="{% url 'dashboard:user_detail' service_obj.professionnel.utilisateur.pk %}" class="btn btn-xs btn-outline-primary">Voir profil</a>
+        </div>
+        <hr>
+        <h4 class="card-title">Actions rapides</h4>
+        <a href="{% url 'dashboard:service_toggle_status' service_obj.pk %}" class="btn btn-block {% if service_obj.est_actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+            {% if service_obj.est_actif %}Désactiver le service{% else %}Activer le service{% endif %}
+        </a>
+        <button class="btn btn-block btn-outline-warning mt-2">Signaler un problème</button>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4 class="card-title">Dernières Réservations</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservations %}
+                        <tr>
+                            <td>{{ res.touriste.username }}</td>
+                            <td><label class="badge badge-info">{{ res.get_statut_display }}</label></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2">Aucune réservation.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
