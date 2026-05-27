@@ -11,7 +11,9 @@ import '../../widgets/home/service_card.dart';
 import '../../data/mock_data.dart';
 import '../touriste/profil/profil_screen.dart';
 import '../touriste/reservations/formulaire_reservation_screen.dart';
-import '../touriste/recherche/service_detail_screen.dart';
+import '../services/service_detail_screen.dart';
+import '../recherche/search_screen.dart';
+import '../favoris/favoris_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,8 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomeContent(),
-    const Center(child: Text('Exploration')),
-    const Center(child: Text('Favoris')),
+    const SearchScreen(),
+    const FavorisScreen(),
     const ProfilScreen(),
   ];
 
@@ -89,7 +91,9 @@ class _HomeContentState extends State<HomeContent> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ServiceProvider>().fetchServices();
+      final sp = context.read<ServiceProvider>();
+      sp.fetchServices();
+      sp.fetchTopRated();
     });
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -179,8 +183,10 @@ class _HomeContentState extends State<HomeContent> {
                       ),
                     ],
                   ),
-                  child: const TextField(
-                    decoration: InputDecoration(
+                  child: TextField(
+                    readOnly: true,
+                    onTap: () => Navigator.pushNamed(context, '/search'),
+                    decoration: const InputDecoration(
                       hintText: 'Où voulez-vous aller ?',
                       prefixIcon: Icon(Icons.search, color: AppColors.primary),
                       border: InputBorder.none,
@@ -223,16 +229,19 @@ class _HomeContentState extends State<HomeContent> {
                               ),
                             );
                           }
-                          return ServiceCard(
-                            service: sp.services[index],
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ServiceDetailScreen(service: sp.services[index]),
-                                ),
-                              );
-                            },
+                          return SizedBox(
+                            width: 200,
+                            child: ServiceCard(
+                              service: sp.services[index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ServiceDetailScreen(service: sp.services[index]),
+                                  ),
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
@@ -240,6 +249,46 @@ class _HomeContentState extends State<HomeContent> {
                   },
                 ),
                 const SizedBox(height: 32),
+
+                // ── Section Mieux Notés (Tâche 2) ─────────────────────────
+                _SectionTitle(title: 'Les mieux notés ⭐', action: 'Voir tout', onTap: () {}),
+                const SizedBox(height: 16),
+                Consumer<ServiceProvider>(
+                  builder: (context, sp, _) {
+                    if (sp.isTopRatedLoading && sp.topRatedServices.isEmpty) {
+                      return _ServicesShimmer();
+                    }
+                    if (sp.topRatedServices.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return SizedBox(
+                      height: 220,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        clipBehavior: Clip.none,
+                        itemCount: sp.topRatedServices.length,
+                        itemBuilder: (context, index) {
+                          return SizedBox(
+                            width: 200,
+                            child: ServiceCard(
+                              service: sp.topRatedServices[index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ServiceDetailScreen(service: sp.topRatedServices[index]),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+
                 _SectionTitle(title: 'Activités', action: 'Voir tout', onTap: () {}),
                 const SizedBox(height: 16),
                 GridView.builder(

@@ -5,20 +5,31 @@ import '../services/api_service.dart';
 
 class ServiceProvider with ChangeNotifier {
   List<Service> _services = [];
+  List<Service> _topRatedServices = [];
   bool _isLoading = false;
+  bool _isTopRatedLoading = false;
   bool _hasError = false;
   String? _errorMessage;
   String? _nextPageUrl;
   bool _hasMore = true;
 
   List<Service> get services => _services;
+  List<Service> get topRatedServices => _topRatedServices;
   bool get isLoading => _isLoading;
+  bool get isTopRatedLoading => _isTopRatedLoading;
   bool get hasError => _hasError;
   String? get errorMessage => _errorMessage;
   bool get hasMore => _hasMore;
 
-  // ── Chargement initial ────────────────────────────────────────────────────
-  Future<void> fetchServices({String? categorie, String? q}) async {
+  // ── Chargement initial avec filtres ──────────────────────────────────────
+  Future<void> fetchServices({
+    String? typeService,
+    String? search,
+    double? prixMin,
+    double? prixMax,
+    double? noteMin,
+    String? ordering,
+  }) async {
     _isLoading = true;
     _hasError = false;
     _services = [];
@@ -29,8 +40,18 @@ class ServiceProvider with ChangeNotifier {
     try {
       String endpoint = '/services/';
       final params = <String>[];
-      if (categorie != null) params.add('categorie=$categorie');
-      if (q != null && q.isNotEmpty) params.add('q=$q');
+
+      if (typeService != null && typeService != 'TOUT') {
+        params.add('type_service=$typeService');
+      }
+      if (search != null && search.isNotEmpty) {
+        params.add('search=$search');
+      }
+      if (prixMin != null) params.add('prix_min=$prixMin');
+      if (prixMax != null) params.add('prix_max=$prixMax');
+      if (noteMin != null) params.add('note_min=$noteMin');
+      if (ordering != null) params.add('ordering=$ordering');
+
       if (params.isNotEmpty) endpoint += '?${params.join('&')}';
 
       final response = await ApiService.get(endpoint);
@@ -52,6 +73,35 @@ class ServiceProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  // ── Chargement des mieux notés ───────────────────────────────────────────
+  Future<void> fetchTopRated() async {
+    _isTopRatedLoading = true;
+    notifyListeners();
+    try {
+      final response = await ApiService.get('/services/?ordering=-note_moyenne');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data['results'] as List<dynamic>;
+        _topRatedServices = results.map((e) => Service.fromJson(e)).take(5).toList();
+      }
+    } catch (_) {}
+    _isTopRatedLoading = false;
+    notifyListeners();
+  }
+
+  // ── Récupérer par ID ─────────────────────────────────────────────────────
+  Future<Service?> fetchById(int id) async {
+    try {
+      final response = await ApiService.get('/services/$id/');
+      if (response.statusCode == 200) {
+        return Service.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      debugPrint('Error fetching service $id: $e');
+    }
+    return null;
   }
 
   // ── Chargement de la page suivante (infinite scroll) ─────────────────────
@@ -79,5 +129,10 @@ class ServiceProvider with ChangeNotifier {
   }
 
   // ── Rafraîchissement complet ──────────────────────────────────────────────
-  Future<void> refresh() => fetchServices();
+  Future<void> refresh() async {
+    await Future.wait([
+      fetchServices(),
+      fetchTopRated(),
+    ]);
+  }
 }

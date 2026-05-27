@@ -23,11 +23,13 @@ dependencies:
   # HTTP & Stockage
   http: ^1.6.0
   flutter_secure_storage: ^10.0.0
+  shared_preferences: ^2.2.3
 
   # Utilitaires
   url_launcher: ^6.2.5
   image_picker: ^1.1.2   # ← Ajouté pour l'upload capture paiement S2
   intl: ^0.19.0           # ← Ajouté pour les dates (réservations S2)
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:
