@@ -194,6 +194,31 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // ── Nouveaux Boutons (Tâche A & B) ────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FeatureButton(
+                        icon: Icons.calendar_month_outlined,
+                        label: 'Calendrier',
+                        color: Colors.blue,
+                        onTap: () => Navigator.pushNamed(context, '/events'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _FeatureButton(
+                        icon: Icons.map_outlined,
+                        label: 'Carte Togo',
+                        color: Colors.green,
+                        onTap: () => Navigator.pushNamed(context, '/explore-map'),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
                 const HeroBanner(),
                 const SizedBox(height: 32),
                 _SectionTitle(title: 'Populaires', action: 'Voir tout', onTap: () {}),
@@ -415,6 +440,49 @@ class _EmptyWidget extends StatelessWidget {
               style: const TextStyle(color: AppColors.textSecondary),
               textAlign: TextAlign.center),
         ],
+      ),
+    );
+  }
+}
+
+class _FeatureButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _FeatureButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 30),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
