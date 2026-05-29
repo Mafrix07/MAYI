@@ -60,17 +60,13 @@ class FavoriteProvider with ChangeNotifier {
     final serviceId = service.id;
     final exists = _favoriteIds.contains(serviceId);
     
-    print('Fav: Toggle $serviceId (actuellement favori: $exists)');
-
     // Mise à jour immédiate UI (optimiste)
     if (exists) {
       _favoriteIds.remove(serviceId);
       _favorites.removeWhere((element) => element.id == serviceId);
-      print('Fav: Supprimé de la liste locale. Taille: ${_favorites.length}');
     } else {
       _favoriteIds.add(serviceId);
       _favorites.insert(0, service);
-      print('Fav: Ajouté à la liste locale. Taille: ${_favorites.length}');
     }
     notifyListeners();
     await _saveLocalIds();

@@ -27,9 +27,12 @@ dependencies:
 
   # Utilitaires
   url_launcher: ^6.2.5
-  image_picker: ^1.1.2   # ← Ajouté pour l'upload capture paiement S2
+  image_picker: ^1.1.2   # ← Ajouté pour l'upload capture écran paiement S2
   intl: ^0.19.0           # ← Ajouté pour les dates (réservations S2)
   flutter_rating_bar: ^4.0.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+
 
 dev_dependencies:
   flutter_test:

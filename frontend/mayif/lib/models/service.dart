@@ -9,6 +9,8 @@ class Service {
   final double noteMoyenne;
   final bool estDisponible;
   final double montantAcompte;
+  final double? latitude;
+  final double? longitude;
 
   Service({
     required this.id,
@@ -21,10 +23,11 @@ class Service {
     required this.noteMoyenne,
     required this.estDisponible,
     required this.montantAcompte,
+    this.latitude,
+    this.longitude,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
-    // Récupération de l'image (soit de photo_principale object, soit de image path)
     String? img;
     if (json['photo_principale'] != null) {
       img = json['photo_principale']['image'];
@@ -32,15 +35,17 @@ class Service {
 
     return Service(
       id: json['id'],
-      titre: json['nom'] ?? 'Sans nom', // Django: 'nom'
+      titre: json['nom'] ?? 'Sans nom',
       description: json['description'] ?? '',
-      categorie: json['type_service'] ?? 'SERVICE', // Django: 'type_service'
+      categorie: json['type_service'] ?? 'SERVICE',
       prix: double.parse((json['prix'] ?? 0).toString()),
       imagePrincipale: img,
-      ville: json['adresse'] ?? 'Togo', // Utilise l'adresse comme ville
+      ville: json['adresse'] ?? 'Togo',
       noteMoyenne: double.parse((json['note_moyenne'] ?? 0).toString()),
-      estDisponible: json['est_actif'] ?? true, // Django: 'est_actif'
+      estDisponible: json['est_actif'] ?? true,
       montantAcompte: double.parse((json['montant_acompte'] ?? 5000).toString()),
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
     );
   }
 }

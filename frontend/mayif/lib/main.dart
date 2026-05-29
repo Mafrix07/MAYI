@@ -6,11 +6,14 @@ import 'providers/auth_provider.dart';
 import 'providers/service_provider.dart';
 import 'providers/avis_provider.dart';
 import 'providers/favorite_provider.dart';
+import 'providers/event_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/recherche/search_screen.dart';
 import 'screens/favoris/favoris_screen.dart';
+import 'screens/touriste/events/event_list_screen.dart';
+import 'screens/touriste/recherche/explore_map_screen.dart';
 import 'screens/pro/dashboard_pro_screen.dart';
 import 'screens/pro/mes_services/mes_services_screen.dart';
 import 'screens/pro/reservations_recues/reservations_recues_screen.dart';
@@ -35,6 +38,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ServiceProvider()),
         ChangeNotifierProvider(create: (_) => AvisProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
       child: const MayiTogoApp(),
     ),
@@ -57,7 +61,9 @@ class MayiTogoApp extends StatelessWidget {
         '/profile':              (context) => const ProfilScreen(),
         '/home':                 (context) => const HomeScreen(),
         '/search':               (context) => const SearchScreen(),
+        '/explore-map':          (context) => const ExploreMapScreen(),
         '/favoris':              (context) => const FavorisScreen(),
+        '/events':               (context) => const EventListScreen(),
         '/dashboard-pro':        (context) => const DashboardProScreen(),
         '/admin':                (context) => const HomeScreen(), // temporaire
         // Touriste
