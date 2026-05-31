@@ -38,7 +38,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_authenticators(self):
-        if self.action in ['list', 'retrieve']:
+        if getattr(self, 'action', None) in ['list', 'retrieve']:
             return []
         return super().get_authenticators()
 
