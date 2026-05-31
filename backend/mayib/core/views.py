@@ -16,6 +16,7 @@ class EvenementViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Evenement.objects.all().select_related('organisateur')
     serializer_class = EvenementSerializer
+    authentication_classes = []
     permission_classes = [permissions.AllowAny]
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]

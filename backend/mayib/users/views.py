@@ -1,5 +1,7 @@
 
 
+import secrets
+from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -79,3 +81,15 @@ class ProfilePhotoView(APIView):
             {"error": "Aucun fichier photo_profil reçu"},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class DashboardCodeView(APIView):
+    """Génère un code usage unique (60s) pour auto-login dashboard sans JWT dans l'URL."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role not in ['SUPPORT', 'ADMIN']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        code = secrets.token_urlsafe(32)
+        cache.set(f'dashboard_code_{code}', request.user.pk, timeout=60)
+        return Response({'code': code})

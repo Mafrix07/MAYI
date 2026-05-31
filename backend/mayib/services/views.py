@@ -1,9 +1,14 @@
 ﻿from rest_framework import viewsets, permissions, filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Service
-from .serializers import ServiceSerializer
+from .models import Service, PhotoService
+from .serializers import ServiceSerializer, PhotoServiceSerializer
 from .filters import ServiceFilter
 from users.permissions import IsProfessionnel
 
@@ -32,6 +37,11 @@ class ServiceViewSet(viewsets.ModelViewSet):
         )
         return queryset
 
+    def get_authenticators(self):
+        if self.action in ['list', 'retrieve']:
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
@@ -44,4 +54,44 @@ class ServiceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             professionnel=self.request.user.profil_professionnel
+        )
+
+
+class PhotoServiceUploadView(APIView):
+    """POST /services/{id}/photos/ — Ajoute une photo à un service."""
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, service_id):
+        service = get_object_or_404(Service, pk=service_id)
+
+        # Seul le propriétaire peut ajouter des photos
+        if service.professionnel.utilisateur != request.user:
+            return Response(
+                {'error': 'Vous n\'êtes pas propriétaire de ce service.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        image = request.FILES.get('image')
+        if not image:
+            return Response(
+                {'error': 'Aucune image fournie.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        est_principale = request.data.get('est_principale', 'false').lower() == 'true'
+
+        # Si principale → retirer le flag des autres photos
+        if est_principale:
+            service.photos.update(est_principale=False)
+
+        photo = PhotoService.objects.create(
+            service=service,
+            image=image,
+            est_principale=est_principale,
+        )
+
+        return Response(
+            PhotoServiceSerializer(photo, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
         )

@@ -38,10 +38,12 @@ class AvisViewSet(viewsets.ModelViewSet):
             'touriste', 'service'
         ).order_by('-date_creation')
 
+    def get_authenticators(self):
+        if self.action in ['list', 'retrieve']:
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
-        """
-        Gestion des permissions par action.
-        """
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
         elif self.action == 'create':
