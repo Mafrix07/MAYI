@@ -33,8 +33,8 @@ class User {
       telephone: json['telephone'],
       photoProfil: json['photo_profil'],
       role: json['role'],
-      profilTouriste: json['profil_touriste'],
-      profilProfessionnel: json['profil_professionnel'],
+      profilTouriste: json['role'] == 'TOURISTE' ? json['profil_detail'] : json['profil_touriste'],
+      profilProfessionnel: json['role'] == 'PROFESSIONNEL' ? json['profil_detail'] : json['profil_professionnel'],
     );
   }
 

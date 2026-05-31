@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/constants/app_colors.dart';
+import '../../services/reservation_service.dart';
+import '../../widgets/common/glass_card.dart';
 
 class DashboardProScreen extends StatefulWidget {
   const DashboardProScreen({super.key});
@@ -10,108 +14,221 @@ class DashboardProScreen extends StatefulWidget {
 }
 
 class _DashboardProScreenState extends State<DashboardProScreen> {
+  int _enAttente = 0;
+  int _confirmees = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final reservations = await ReservationService.getReservationsRecues();
+      if (!mounted) return;
+      setState(() {
+        _enAttente = reservations
+            .where((r) =>
+                r['statut'] == 'EN_ATTENTE' ||
+                r['statut'] == 'ACOMPTE_EN_VERIFICATION')
+            .length;
+        _confirmees =
+            reservations.where((r) => r['statut'] == 'CONFIRMEE').length;
+      });
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Espace Professionnel'),
-        backgroundColor: const Color(0xFF1A6B3C),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await auth.logout();
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/login');
-              }
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // En-tête de bienvenue
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1A6B3C), Color(0xFF2E9E5E)],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bonjour, ${user?.username ?? 'Professionnel'} 👋',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
+      backgroundColor: Colors.transparent,
+      body: NatureBackground(
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // ── Header Premium ────────────────────────────────────────────────
+            SliverAppBar(
+              expandedHeight: 220,
+              pinned: true,
+              backgroundColor: AppColors.backgroundMid,
+              elevation: 0,
+              title: Text('Espace Professionnel',
+                  style: GoogleFonts.playfairDisplay(
                       fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Gérez votre activité depuis ici',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Cartes de navigation rapide
-            const Text(
-              'Mon espace',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              children: [
-                _ProCard(
-                  icon: Icons.store,
-                  title: 'Mes Services',
-                  subtitle: 'Gérer mes établissements',
-                  color: const Color(0xFF1A6B3C),
-                  onTap: () => Navigator.pushNamed(context, '/pro/mes-services'),
-                ),
-                _ProCard(
-                  icon: Icons.calendar_today,
-                  title: 'Réservations',
-                  subtitle: 'Voir les demandes reçues',
-                  color: const Color(0xFFF5A623),
-                  onTap: () => Navigator.pushNamed(context, '/pro/reservations'),
-                ),
-                _ProCard(
-                  icon: Icons.star_outline,
-                  title: 'Avis clients',
-                  subtitle: 'Voir les commentaires',
-                  color: Colors.blue,
-                  onTap: () {},
-                ),
-                _ProCard(
-                  icon: Icons.person_outline,
-                  title: 'Mon Profil',
-                  subtitle: 'Modifier mes infos',
-                  color: Colors.purple,
-                  onTap: () => Navigator.pushNamed(context, '/profile'),
+                      color: AppColors.textPrimary)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout, color: AppColors.textSecondary),
+                  onPressed: () async {
+                    await auth.logout();
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    }
+                  },
                 ),
               ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.background, AppColors.backgroundMid],
+                        ),
+                      ),
+                    ),
+                    // Orb décoratif
+                    Positioned(
+                      top: -40,
+                      right: -60,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              AppColors.secondary.withValues(alpha: 0.06),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(20, 100, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${user?.firstName ?? ''} ${user?.lastName ?? user?.username ?? ''} 👋',
+                            style: GoogleFonts.playfairDisplay(
+                              color: AppColors.textPrimary,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Établissement : ${user?.profilProfessionnel?['nom_etablissement'] ?? 'Non défini'}',
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Contenu ───────────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: RefreshIndicator(
+                color: AppColors.secondary,
+                backgroundColor: AppColors.backgroundCard,
+                onRefresh: _loadStats,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Barre de stats ────────────────────────────────────
+                      Text('Performance',
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _StatTile(
+                            label: 'En attente',
+                            value: '$_enAttente',
+                            color: Colors.orange,
+                            icon: Icons.hourglass_empty_rounded,
+                          )),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _StatTile(
+                            label: 'Confirmées',
+                            value: '$_confirmees',
+                            color: AppColors.primaryLight,
+                            icon: Icons.check_circle_rounded,
+                          )),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _StatTile(
+                            label: 'Revenus (Est.)',
+                            value: '${(_confirmees * 15000) / 1000}k',
+                            color: AppColors.secondary,
+                            icon: Icons.payments_outlined,
+                          )),
+                        ],
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // ── Grille d'actions ───────────────────────────────────
+                      Text('Gestion',
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary)),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.95,
+                        children: [
+                          _DashboardActionCard(
+                            icon: Icons.add_business_rounded,
+                            title: 'Mes Services',
+                            subtitle: 'Publier & Modifier',
+                            color: AppColors.primary,
+                            onTap: () => Navigator.pushNamed(
+                                context, '/pro/mes-services'),
+                          ),
+                          _DashboardActionCard(
+                            icon: Icons.receipt_long_rounded,
+                            title: 'Réservations',
+                            subtitle: '$_enAttente nouvelles demandes',
+                            color: Colors.orange,
+                            badge: _enAttente > 0 ? '$_enAttente' : null,
+                            onTap: () => Navigator.pushNamed(
+                                context, '/pro/reservations'),
+                          ),
+                          _DashboardActionCard(
+                            icon: Icons.reviews_rounded,
+                            title: 'Avis Clients',
+                            subtitle: 'Répondre aux avis',
+                            color: Colors.blue,
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/pro/avis'),
+                          ),
+                          _DashboardActionCard(
+                            icon: Icons.manage_accounts_rounded,
+                            title: 'Paramètres',
+                            subtitle: 'Profil & Entreprise',
+                            color: Colors.deepPurple,
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/pro/profil'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -120,70 +237,138 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
   }
 }
 
-// Widget carte de navigation
-class _ProCard extends StatelessWidget {
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _StatTile(
+      {required this.label,
+      required this.value,
+      required this.color,
+      required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.secondary, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary)),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardActionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
+  final String? badge;
 
-  const _ProCard({
+  const _DashboardActionCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
     required this.onTap,
+    this.badge,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return GlassCard(
+      borderRadius: 24,
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const Spacer(),
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      height: 1.2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+          ),
+          if (badge != null)
+            Positioned(
+              top: 14,
+              right: 14,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.red.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2))
+                  ],
+                ),
+                child: Text(
+                  badge!,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
-              child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 11,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

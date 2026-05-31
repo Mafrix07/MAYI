@@ -17,6 +17,8 @@ import 'screens/touriste/recherche/explore_map_screen.dart';
 import 'screens/pro/dashboard_pro_screen.dart';
 import 'screens/pro/mes_services/mes_services_screen.dart';
 import 'screens/pro/reservations_recues/reservations_recues_screen.dart';
+import 'screens/pro/avis/mes_avis_screen.dart';
+import 'screens/pro/profil/profil_pro_screen.dart';
 import 'screens/touriste/reservations/mes_reservations_screen.dart';
 import 'screens/touriste/profil/profil_screen.dart';
 import 'screens/splash_screen.dart';
@@ -71,6 +73,8 @@ class MayiTogoApp extends StatelessWidget {
         // Pro — Semaine 3
         '/pro/mes-services':     (context) => const MesServicesScreen(),
         '/pro/reservations':     (context) => const ReservationsRecuesScreen(),
+        '/pro/avis':             (context) => const MesAvisProScreen(),
+        '/pro/profil':           (context) => const ProfilProScreen(),
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {

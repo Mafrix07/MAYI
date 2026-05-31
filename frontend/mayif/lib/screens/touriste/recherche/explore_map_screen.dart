@@ -7,6 +7,7 @@ import '../../../providers/service_provider.dart';
 import '../../../providers/event_provider.dart';
 import '../../../models/service.dart';
 import '../../../models/evenement.dart';
+import '../../../widgets/common/glass_card.dart';
 import '../../services/service_detail_screen.dart';
 
 class ExploreMapScreen extends StatefulWidget {
@@ -34,8 +35,8 @@ class _ExploreMapScreenState extends State<ExploreMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explorer le Togo 🇹🇬'),
-        backgroundColor: Colors.white,
+        title: const Text('Explorer le Togo'),
+        backgroundColor: AppColors.backgroundMid,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
@@ -59,7 +60,7 @@ class _ExploreMapScreenState extends State<ExploreMapScreen> {
                           _selectedService = service;
                           _selectedEvent = null;
                         }),
-                        child: const Icon(Icons.location_on, color: AppColors.primary, size: 40),
+                        child: const Icon(Icons.location_on, color: AppColors.secondary, size: 40),
                       ),
                     ),
                   );
@@ -88,8 +89,8 @@ class _ExploreMapScreenState extends State<ExploreMapScreen> {
 
               return FlutterMap(
                 mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: LatLng(6.1375, 1.2125), // Lomé
+                options: const MapOptions(
+                  initialCenter: LatLng(6.1375, 1.2125),
                   initialZoom: 13,
                 ),
                 children: [
@@ -160,22 +161,20 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
+      borderRadius: 20,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle),
                 child: Icon(Icons.place, color: color),
               ),
               const SizedBox(width: 12),
@@ -183,13 +182,26 @@ class _PreviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(category, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(category,
+                        style: TextStyle(
+                            color: color,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.textPrimary)),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12)),
                   ],
                 ),
               ),
-              IconButton(onPressed: onClose, icon: const Icon(Icons.close)),
+              IconButton(
+                onPressed: onClose,
+                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -197,8 +209,14 @@ class _PreviewCard extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: onTap,
-              style: ElevatedButton.styleFrom(backgroundColor: color, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Voir plus', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.background,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Voir plus',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],

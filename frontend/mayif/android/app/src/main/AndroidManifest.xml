@@ -2,7 +2,7 @@
     package="com.example.frontend_new">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="frontend_new"
+        android:label="Mayi"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

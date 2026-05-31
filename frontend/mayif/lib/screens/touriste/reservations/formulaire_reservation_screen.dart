@@ -1,8 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../services/reservation_service.dart';
 import '../../../widgets/common/custom_button.dart';
+import '../../../widgets/common/custom_text_field.dart';
+import '../../../widgets/common/glass_card.dart';
 import 'paiement_screen.dart';
 
 class FormulaireReservationScreen extends StatefulWidget {
@@ -41,7 +45,12 @@ class _FormulaireReservationScreenState
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(primary: AppColors.primary),
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.secondary,
+            onPrimary: AppColors.background,
+            surface: AppColors.backgroundCard,
+            onSurface: Colors.white,
+          ),
         ),
         child: child!,
       ),
@@ -86,7 +95,6 @@ class _FormulaireReservationScreenState
       if (!mounted) return;
 
       if (reservationId != null) {
-        // Passer à l'écran de paiement
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -111,203 +119,171 @@ class _FormulaireReservationScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Réserver'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Titre du service
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.store, color: AppColors.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(widget.serviceTitre,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          Text(
-                              'Acompte : ${widget.montantAcompte.toStringAsFixed(0)} FCFA',
-                              style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Date de début
-              const Text('Date de début',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => _pickDate(true),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                        color: _dateDebut != null
-                            ? AppColors.primary
-                            : Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+    return NatureBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Réserver', style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, color: Colors.white)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Service Recap (Glass)
+                GlassCard(
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, color: AppColors.primary),
-                      const SizedBox(width: 12),
-                      Text(
-                        _dateDebut != null
-                            ? _dateFormat.format(_dateDebut!)
-                            : 'Sélectionner une date',
-                        style: TextStyle(
-                            color: _dateDebut != null
-                                ? AppColors.textPrimary
-                                : Colors.grey),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.hotel_outlined, color: AppColors.secondary, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.serviceTitre,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+                            const SizedBox(height: 4),
+                            Text(
+                                'Acompte : ${widget.montantAcompte.toStringAsFixed(0)} FCFA',
+                                style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 32),
 
-              // Date de fin (optionnelle)
-              const Text('Date de fin (optionnel)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => _pickDate(false),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                        color: _dateFin != null
-                            ? AppColors.primary
-                            : Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+                Text('Détails du séjour', style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+
+                // Main Form (Glass)
+                GlassCard(
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.calendar_month, color: AppColors.primary),
-                      const SizedBox(width: 12),
-                      Text(
-                        _dateFin != null
-                            ? _dateFormat.format(_dateFin!)
-                            : 'Sélectionner une date de fin',
-                        style: TextStyle(
-                            color: _dateFin != null
-                                ? AppColors.textPrimary
-                                : Colors.grey),
+                      _buildDatePicker('Date de début', _dateDebut, true),
+                      const SizedBox(height: 20),
+                      _buildDatePicker('Date de fin (optionnel)', _dateFin, false),
+                      const SizedBox(height: 32),
+
+                      const Text('Nombre de voyageurs',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: () { if (_nombrePersonnes > 1) setState(() => _nombrePersonnes--); },
+                              icon: const Icon(Icons.remove_circle_outline, color: AppColors.secondary),
+                            ),
+                            Text('$_nombrePersonnes',
+                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                            IconButton(
+                              onPressed: () => setState(() => _nombrePersonnes++),
+                              icon: const Icon(Icons.add_circle_outline, color: AppColors.secondary),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 32),
 
-              // Nombre de personnes
-              const Text('Nombre de personnes',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(12),
+                // Final Recap
+                GlassCard(
+                  borderRadius: 20,
+                  fillColor: AppColors.primary.withValues(alpha: 0.2),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _RecapRow('Nombre de personnes', '$_nombrePersonnes'),
+                      if (_dateDebut != null) _RecapRow('Arrivée', _dateFormat.format(_dateDebut!)),
+                      if (_dateFin != null) _RecapRow('Départ', _dateFormat.format(_dateFin!)),
+                      const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: Colors.white10)),
+                      _RecapRow(
+                        'Total Acompte',
+                        '${widget.montantAcompte.toStringAsFixed(0)} FCFA',
+                        isBold: true,
+                        color: AppColors.secondary,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(Icons.people_outline, color: AppColors.primary),
-                    IconButton(
-                      onPressed: () {
-                        if (_nombrePersonnes > 1) {
-                          setState(() => _nombrePersonnes--);
-                        }
-                      },
-                      icon: const Icon(Icons.remove_circle_outline,
-                          color: AppColors.primary),
-                    ),
-                    Text('$_nombrePersonnes',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    IconButton(
-                      onPressed: () => setState(() => _nombrePersonnes++),
-                      icon: const Icon(Icons.add_circle_outline,
-                          color: AppColors.primary),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
 
-              // Récapitulatif
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  ),
+                
+                const SizedBox(height: 32),
+                CustomButton(
+                  text: 'Valider la réservation',
+                  onPressed: _submit,
+                  isLoading: _isLoading,
                 ),
-                child: Column(
-                  children: [
-                    _RecapRow('Personnes', '$_nombrePersonnes'),
-                    if (_dateDebut != null)
-                      _RecapRow('Début', _dateFormat.format(_dateDebut!)),
-                    if (_dateFin != null)
-                      _RecapRow('Fin', _dateFormat.format(_dateFin!)),
-                    const Divider(),
-                    _RecapRow(
-                      'Acompte à payer',
-                      '${widget.montantAcompte.toStringAsFixed(0)} FCFA',
-                      isBold: true,
-                      color: AppColors.primary,
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Text(_errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center),
+                const SizedBox(height: 100),
               ],
-              const SizedBox(height: 24),
-
-              CustomButton(
-                text: 'Continuer vers le paiement',
-                onPressed: _submit,
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDatePicker(String label, DateTime? date, bool isDebut) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textSecondary)),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () => _pickDate(isDebut),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: date != null ? AppColors.secondary : Colors.white12, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today_outlined, color: date != null ? AppColors.secondary : Colors.white38, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  date != null ? _dateFormat.format(date) : 'Choisir une date',
+                  style: TextStyle(color: date != null ? Colors.white : Colors.white38, fontWeight: date != null ? FontWeight.bold : FontWeight.normal),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -318,8 +294,7 @@ class _RecapRow extends StatelessWidget {
   final bool isBold;
   final Color? color;
 
-  const _RecapRow(this.label, this.value,
-      {this.isBold = false, this.color});
+  const _RecapRow(this.label, this.value, {this.isBold = false, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -328,12 +303,8 @@ class _RecapRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(color: AppColors.textSecondary)),
-          Text(value,
-              style: TextStyle(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  color: color ?? AppColors.textPrimary)),
+          Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color ?? Colors.white, fontSize: isBold ? 16 : 14)),
         ],
       ),
     );
