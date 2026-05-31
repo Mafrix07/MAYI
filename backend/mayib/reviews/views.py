@@ -39,7 +39,7 @@ class AvisViewSet(viewsets.ModelViewSet):
         ).order_by('-date_creation')
 
     def get_authenticators(self):
-        if self.action in ['list', 'retrieve']:
+        if getattr(self, 'action', None) in ['list', 'retrieve']:
             return []
         return super().get_authenticators()
 
