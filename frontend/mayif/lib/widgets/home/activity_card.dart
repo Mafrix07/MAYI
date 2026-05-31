@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/mock_data.dart';
 import '../../core/constants/app_colors.dart';
+import '../common/glass_card.dart';
 
 class ActivityCard extends StatelessWidget {
   final Activity activity;
@@ -9,28 +10,21 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+      borderRadius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(activity.emoji, style: const TextStyle(fontSize: 32)),
+          Text(activity.emoji, style: const TextStyle(fontSize: 28)),
           const Spacer(),
           Text(
             activity.title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: AppColors.textPrimary,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -40,17 +34,14 @@ class ActivityCard extends StatelessWidget {
             children: [
               Text(
                 activity.duration,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                ),
+                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
               ),
               Text(
                 activity.price,
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.secondary,
                 ),
               ),
             ],

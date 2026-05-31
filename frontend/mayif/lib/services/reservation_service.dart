@@ -24,11 +24,27 @@ class ReservationService {
     return [];
   }
 
-  // ── Annuler une réservation ───────────────────────────────────────────────
+  // ── Annuler une réservation (touriste) ───────────────────────────────────
   static Future<bool> annuler(int reservationId) async {
     final response =
         await ApiService.post('/reservations/$reservationId/annuler/', {});
     return response.statusCode == 200;
+  }
+
+  // ── Changer statut (Pro : CONFIRMEE / ANNULEE) ────────────────────────────
+  static Future<bool> changerStatut(int id, String statut) async {
+    final response = await ApiService.patch('/reservations/$id/', {'statut': statut});
+    return response.statusCode == 200;
+  }
+
+  // ── Réservations reçues pour un Pro ──────────────────────────────────────
+  static Future<List<dynamic>> getReservationsRecues() async {
+    final response = await ApiService.get('/reservations/');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['results'] ?? data;
+    }
+    return [];
   }
 
   // ── Upload capture écran paiement ─────────────────────────────────────────

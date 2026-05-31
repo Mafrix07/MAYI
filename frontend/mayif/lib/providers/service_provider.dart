@@ -6,8 +6,10 @@ import '../services/api_service.dart';
 class ServiceProvider with ChangeNotifier {
   List<Service> _services = [];
   List<Service> _topRatedServices = [];
+  List<Service> _activityServices = [];
   bool _isLoading = false;
   bool _isTopRatedLoading = false;
+  bool _isActivitiesLoading = false;
   bool _hasError = false;
   String? _errorMessage;
   String? _nextPageUrl;
@@ -15,8 +17,10 @@ class ServiceProvider with ChangeNotifier {
 
   List<Service> get services => _services;
   List<Service> get topRatedServices => _topRatedServices;
+  List<Service> get activityServices => _activityServices;
   bool get isLoading => _isLoading;
   bool get isTopRatedLoading => _isTopRatedLoading;
+  bool get isActivitiesLoading => _isActivitiesLoading;
   bool get hasError => _hasError;
   String? get errorMessage => _errorMessage;
   bool get hasMore => _hasMore;
@@ -91,6 +95,22 @@ class ServiceProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // ── Chargement des activités (type ACTIVITE) ─────────────────────────────
+  Future<void> fetchActivities() async {
+    _isActivitiesLoading = true;
+    notifyListeners();
+    try {
+      final response = await ApiService.get('/services/?type_service=ACTIVITE');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data['results'] as List<dynamic>;
+        _activityServices = results.map((e) => Service.fromJson(e)).take(6).toList();
+      }
+    } catch (_) {}
+    _isActivitiesLoading = false;
+    notifyListeners();
+  }
+
   // ── Récupérer par ID ─────────────────────────────────────────────────────
   Future<Service?> fetchById(int id) async {
     try {
@@ -133,6 +153,7 @@ class ServiceProvider with ChangeNotifier {
     await Future.wait([
       fetchServices(),
       fetchTopRated(),
+      fetchActivities(),
     ]);
   }
 }

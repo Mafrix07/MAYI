@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -17,14 +18,14 @@ class ServiceCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 220,
-        margin: const EdgeInsets.only(right: 16, bottom: 8, top: 8),
+        margin: const EdgeInsets.only(right: 14, bottom: 8, top: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -32,50 +33,73 @@ class ServiceCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
-              // Image
+              // Image de fond
               CachedNetworkImage(
-                imageUrl: service.imagePrincipale ?? 'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
+                imageUrl: service.imagePrincipale ??
+                    'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
                 fit: BoxFit.cover,
                 height: double.infinity,
                 width: double.infinity,
-                placeholder: (context, url) => Container(color: Colors.grey[200]),
-                errorWidget: (context, url, error) => const Center(
-                  child: Icon(Icons.store, color: AppColors.primary, size: 40),
+                placeholder: (_, __) => Container(
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.backgroundGradient,
+                  ),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: AppColors.backgroundCard,
+                  child: const Icon(Icons.store, color: AppColors.secondary, size: 48),
                 ),
               ),
-              
-              // Gradient Overlay
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+
+              // Dégradé sombre en bas
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        AppColors.background.withValues(alpha: 0.5),
+                        AppColors.background.withValues(alpha: 0.9),
+                      ],
+                      stops: const [0.3, 0.65, 1.0],
+                    ),
                   ),
                 ),
               ),
 
-              // Favorite Button
+              // Bouton favori (haut droit) avec glassmorphism
               Positioned(
-                top: 8,
-                right: 8,
+                top: 10,
+                right: 10,
                 child: Consumer<FavoriteProvider>(
                   builder: (context, provider, _) {
                     final isFav = provider.isFavorite(service.id);
-                    return Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        onPressed: () => provider.toggleFavorite(service),
-                        icon: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? Colors.red : Colors.white,
-                          size: 24,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.black26,
+                    return GestureDetector(
+                      onTap: () => provider.toggleFavorite(service),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isFav
+                                  ? Colors.red.withValues(alpha: 0.85)
+                                  : AppColors.glassFillMed,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isFav ? Colors.red : AppColors.glassBorder,
+                              ),
+                            ),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -83,78 +107,83 @@ class ServiceCard extends StatelessWidget {
                 ),
               ),
 
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Categorie Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        service.categorie,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    
-                    // Titre
-                    Text(
-                      service.titre,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    // Ville
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, color: Colors.white70, size: 12),
-                        const SizedBox(width: 4),
-                        Text(
-                          service.ville,
-                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+              // Contenu bas de carte
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Badge catégorie
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 4),
-
-                    // Prix & Note
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${service.prix.toStringAsFixed(0)} F',
+                        child: Text(
+                          service.categorie,
                           style: const TextStyle(
-                            color: AppColors.secondary,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            color: AppColors.background,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        Row(
-                          children: [
-                            const Icon(Icons.star, color: AppColors.secondary, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              service.noteMoyenne.toString(),
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
-                            ),
+                      ),
+                      const SizedBox(height: 5),
+
+                      // Titre avec ellipsis
+                      Text(
+                        service.titre,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          shadows: [
+                            Shadow(color: Colors.black54, blurRadius: 4),
                           ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // Ville
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, color: Colors.white70, size: 11),
+                          const SizedBox(width: 2),
+                          Flexible(
+                            child: Text(
+                              service.ville,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      // Prix
+                      Text(
+                        '${service.prix.toStringAsFixed(0)} FCFA',
+                        style: const TextStyle(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

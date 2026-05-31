@@ -8,12 +8,19 @@ class ApiService {
   /// Callback enregistré par AuthProvider pour vider l'état en mémoire
   /// quand le serveur répond 401 (token expiré / invalide).
   static VoidCallback? onUnauthorized;
-  // URL unique selon la plateforme
+
+  // ── URL de base ────────────────────────────────────────────────────────────
+  // Passée au build via --dart-define=API_URL=https://ton-app.railway.app/api
+  // Si non définie : URLs locales selon la plateforme (développement)
+  static const String _prodUrl = String.fromEnvironment('API_URL', defaultValue: '');
+
   static String get baseUrl {
+    if (_prodUrl.isNotEmpty) return _prodUrl;
+    // Développement local
     if (kIsWeb) return 'http://127.0.0.1:8000/api';
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return 'http://10.0.2.2:8000/api';
+        return 'http://10.0.2.2:8000/api'; // émulateur → remplacer par IP LAN sur vrai téléphone
       case TargetPlatform.iOS:
         return 'http://127.0.0.1:8000/api';
       default:

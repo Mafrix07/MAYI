@@ -40,6 +40,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -48,14 +49,32 @@ class _CustomTextFieldState extends State<CustomTextField> {
           obscureText: widget.isPassword ? _obscureText : false,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
+          style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: widget.hint,
-            prefixIcon: Icon(widget.icon, color: AppColors.primary),
+            hintStyle: TextStyle(color: AppColors.textPrimary.withValues(alpha: 0.4)),
+            prefixIcon: Icon(widget.icon, color: AppColors.secondary, size: 20),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.05),
+            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: AppColors.secondary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            ),
             suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
                       color: AppColors.textSecondary,
+                      size: 20,
                     ),
                     onPressed: () => setState(() => _obscureText = !_obscureText),
                   )

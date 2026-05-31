@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/home/hero_banner.dart';
-import '../../widgets/home/activity_card.dart';
 import '../../widgets/home/service_card.dart';
-import '../../data/mock_data.dart';
+import '../../widgets/common/glass_card.dart';
 import '../touriste/profil/profil_screen.dart';
-import '../touriste/reservations/formulaire_reservation_screen.dart';
 import '../services/service_detail_screen.dart';
 import '../recherche/search_screen.dart';
 import '../favoris/favoris_screen.dart';
@@ -25,60 +24,93 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomeContent(),
-    const SearchScreen(),
-    const FavorisScreen(),
-    const ProfilScreen(),
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeContent(
+          onTabChange: (index) => setState(() => _currentIndex = index)),
+      const SearchScreen(),
+      const FavorisScreen(),
+      const ProfilScreen(),
+    ];
+  }
+
+  static const _navItems = [
+    (Icons.home_filled,    Icons.home_outlined,     'Accueil'),
+    (Icons.explore,        Icons.explore_outlined,   'Explorer'),
+    (Icons.favorite,       Icons.favorite_border,    'Favoris'),
+    (Icons.person,         Icons.person_outline,     'Profil'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        height: 70,
-        decoration: BoxDecoration(
-          color: AppColors.textPrimary,
-          borderRadius: BorderRadius.circular(35),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(35),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: Colors.transparent,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppColors.secondary,
-            unselectedItemColor: Colors.white.withValues(alpha: 0.5),
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: ''),
-              BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), label: ''),
-              BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: ''),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
-            ],
+      extendBody: true,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: GlassCard(
+          borderRadius: 30,
+          fillColor: AppColors.glassFillMed,
+          blurStrength: 24,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_navItems.length, (i) {
+              final item   = _navItems[i];
+              final sel    = _currentIndex == i;
+              return GestureDetector(
+                onTap: () => setState(() => _currentIndex = i),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: sel
+                      ? BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColors.secondary.withValues(alpha: 0.4),
+                          ),
+                        )
+                      : null,
+                  child: Row(
+                    children: [
+                      Icon(
+                        sel ? item.$1 : item.$2,
+                        color: sel ? AppColors.secondary : AppColors.textSecondary,
+                        size: 22,
+                      ),
+                      if (sel) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          item.$3,
+                          style: const TextStyle(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }),
           ),
         ),
       ),
-      extendBody: true,
     );
   }
 }
 
+// ── Contenu principal ──────────────────────────────────────────────────────
 class HomeContent extends StatefulWidget {
-  const HomeContent({super.key});
+  final Function(int) onTabChange;
+  const HomeContent({super.key, required this.onTabChange});
 
   @override
   State<HomeContent> createState() => _HomeContentState();
@@ -87,6 +119,15 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   final ScrollController _scrollController = ScrollController();
 
+  static const _categories = [
+    (Icons.hotel_outlined,           'Hôtels',      Color(0xFF1A8FDB), 'HEBERGEMENT'),
+    (Icons.restaurant_menu_outlined,  'Restos',      Color(0xFFE85D04), 'SNACK'),
+    (Icons.hiking_outlined,           'Activités',   Color(0xFF2ECC71), 'ACTIVITE'),
+    (Icons.directions_car_outlined,   'Transport',   Color(0xFF9B59B6), 'TRANSPORT'),
+    (Icons.event_outlined,            'Événements',  Color(0xFFFF6B6B), null),
+    (Icons.map_outlined,              'Carte',       Color(0xFF1DB97A), null),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +135,7 @@ class _HomeContentState extends State<HomeContent> {
       final sp = context.read<ServiceProvider>();
       sp.fetchServices();
       sp.fetchTopRated();
+      sp.fetchActivities();
     });
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -109,229 +151,452 @@ class _HomeContentState extends State<HomeContent> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        title: Row(
-          children: [
-            Image.asset('assets/images/logo.png', height: 30),
-            const SizedBox(width: 8),
-            const Text('Mayi',
-                style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18)),
-          ],
+  void _showNotifications() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundMid,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
         ),
-        actions: [
-          TextButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const FormulaireReservationScreen(
-                    serviceId: 1,
-                    serviceTitre: "Hôtel de la Paix (TEST)",
-                    montantAcompte: 5000,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.bug_report, color: Colors.orange, size: 20),
-            label: const Text('Test S2', style: TextStyle(color: Colors.orange)),
-          ),
-          Consumer<AuthProvider>(
-            builder: (context, auth, _) => Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: IconButton(
-                icon: const Badge(
-                  label: Text('2'),
-                  child: Icon(Icons.notifications_none, color: AppColors.textPrimary),
-                ),
-                onPressed: () {},
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () => context.read<ServiceProvider>().refresh(),
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    readOnly: true,
-                    onTap: () => Navigator.pushNamed(context, '/search'),
-                    decoration: const InputDecoration(
-                      hintText: 'Où voulez-vous aller ?',
-                      prefixIcon: Icon(Icons.search, color: AppColors.primary),
-                      border: InputBorder.none,
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Text('Notifications',
+                      style: GoogleFonts.playfairDisplay(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: const Text('0',
+                        style: TextStyle(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.bold)),
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // ── Nouveaux Boutons (Tâche A & B) ────────────────────────
-                Row(
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(color: AppColors.glassBorder, height: 1),
+            const Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: _FeatureButton(
-                        icon: Icons.calendar_month_outlined,
-                        label: 'Calendrier',
-                        color: Colors.blue,
-                        onTap: () => Navigator.pushNamed(context, '/events'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _FeatureButton(
-                        icon: Icons.map_outlined,
-                        label: 'Carte Togo',
-                        color: Colors.green,
-                        onTap: () => Navigator.pushNamed(context, '/explore-map'),
-                      ),
+                    Icon(Icons.notifications_off_outlined,
+                        size: 64, color: AppColors.textSecondary),
+                    SizedBox(height: 16),
+                    Text('Aucune notification pour le moment',
+                        style: TextStyle(
+                            color: AppColors.textSecondary, fontSize: 16)),
+                    SizedBox(height: 8),
+                    Text(
+                      'Vous serez alerté des confirmations\nde réservation ici.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: AppColors.textHint, fontSize: 13),
                     ),
                   ],
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                const SizedBox(height: 32),
-                const HeroBanner(),
-                const SizedBox(height: 32),
-                _SectionTitle(title: 'Populaires', action: 'Voir tout', onTap: () {}),
-                const SizedBox(height: 16),
-                Consumer<ServiceProvider>(
-                  builder: (context, sp, _) {
-                    if (sp.isLoading && sp.services.isEmpty) {
-                      return _ServicesShimmer();
-                    }
-                    if (sp.hasError && sp.services.isEmpty) {
-                      return _ErrorWidget(
-                        message: sp.errorMessage ?? 'Erreur de connexion',
-                        onRetry: () => sp.fetchServices(),
-                      );
-                    }
-                    if (sp.services.isEmpty) {
-                      return const _EmptyWidget(
-                        message: 'Aucun service disponible pour le moment',
-                      );
-                    }
-                    return SizedBox(
-                      height: 220,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        itemCount: sp.services.length + (sp.hasMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == sp.services.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: CircularProgressIndicator(strokeWidth: 2),
+  void _onCategoryTap(int index) {
+    final cat = _categories[index];
+    if (cat.$4 == null) {
+      // Événements ou Carte
+      Navigator.pushNamed(
+          context, index == 4 ? '/events' : '/explore-map');
+    } else {
+      widget.onTabChange(1); // Bascule vers l'onglet recherche
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth    = context.watch<AuthProvider>();
+    final hour    = DateTime.now().hour;
+    final greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bonsoir' : 'Bonne soirée';
+    final firstName = auth.user?.firstName?.isNotEmpty == true
+        ? auth.user!.firstName!
+        : 'Voyageur';
+
+    return NatureBackground(
+      child: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.secondary,
+          backgroundColor: AppColors.backgroundCard,
+          onRefresh: () => context.read<ServiceProvider>().refresh(),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+
+                  // ── Header ────────────────────────────────────────────
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$greeting 👋',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
                               ),
-                            );
-                          }
-                          return SizedBox(
-                            width: 200,
-                            child: ServiceCard(
-                              service: sp.services[index],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ServiceDetailScreen(service: sp.services[index]),
-                                  ),
-                                );
-                              },
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                // ── Section Mieux Notés (Tâche 2) ─────────────────────────
-                _SectionTitle(title: 'Les mieux notés ⭐', action: 'Voir tout', onTap: () {}),
-                const SizedBox(height: 16),
-                Consumer<ServiceProvider>(
-                  builder: (context, sp, _) {
-                    if (sp.isTopRatedLoading && sp.topRatedServices.isEmpty) {
-                      return _ServicesShimmer();
-                    }
-                    if (sp.topRatedServices.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return SizedBox(
-                      height: 220,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        itemCount: sp.topRatedServices.length,
-                        itemBuilder: (context, index) {
-                          return SizedBox(
-                            width: 200,
-                            child: ServiceCard(
-                              service: sp.topRatedServices[index],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ServiceDetailScreen(service: sp.topRatedServices[index]),
-                                  ),
-                                );
-                              },
+                            const SizedBox(height: 2),
+                            Text(
+                              firstName,
+                              style: GoogleFonts.playfairDisplay(
+                                color: AppColors.textPrimary,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          );
-                        },
+                            const SizedBox(height: 2),
+                            Text(
+                              'Où allez-vous aujourd\'hui ?',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.15),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
 
-                _SectionTitle(title: 'Activités', action: 'Voir tout', onTap: () {}),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.3,
+                      // Notification bell
+                      GestureDetector(
+                        onTap: _showNotifications,
+                        child: GlassCard(
+                          borderRadius: 14,
+                          padding: const EdgeInsets.all(12),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              const Icon(Icons.notifications_outlined,
+                                  color: AppColors.textPrimary, size: 24),
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.secondary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ).animate().fadeIn(delay: 200.ms),
+                    ],
                   ),
-                  itemCount: mockActivities.length,
-                  itemBuilder: (context, index) {
-                    return ActivityCard(activity: mockActivities[index]);
-                  },
-                ),
-                const SizedBox(height: 120),
-              ],
+
+                  const SizedBox(height: 20),
+
+                  // ── Barre de recherche glass ──────────────────────────
+                  GestureDetector(
+                    onTap: () => widget.onTabChange(1), // Change d'onglet via le callback
+                    child: GlassCard(
+                      borderRadius: 18,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 16),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search,
+                              color: AppColors.secondary, size: 22),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Hôtel, restaurant, activité...',
+                            style: const TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const Spacer(),
+                          GlassCard(
+                            borderRadius: 10,
+                            padding: const EdgeInsets.all(6),
+                            fillColor: AppColors.secondary.withValues(alpha: 0.15),
+                            borderColor: AppColors.secondary.withValues(alpha: 0.4),
+                            child: const Icon(Icons.tune,
+                                color: AppColors.secondary, size: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.15),
+
+                  const SizedBox(height: 24),
+
+                  // ── Catégories avec icônes ────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(_categories.length, (i) {
+                        final cat = _categories[i];
+                        return GestureDetector(
+                          onTap: () => _onCategoryTap(i),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 52, // Ajusté légèrement pour tenir à 6 sur tous les écrans
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: cat.$3.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: cat.$3.withValues(alpha: 0.35),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cat.$3.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ],
+                                ),
+                                child: Icon(cat.$1, color: cat.$3, size: 24),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                cat.$2,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).animate().fadeIn(delay: (i * 60 + 200).ms).slideY(begin: 0.2);
+                      }),
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // ── Hero Banner (images des services réels) ───────────
+                  Consumer<ServiceProvider>(
+                    builder: (context, sp, _) => HeroBanner(
+                      services: sp.topRatedServices,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 300.ms)
+                      .slideY(begin: 0.1),
+
+                  const SizedBox(height: 32),
+
+                  // ── Populaires ────────────────────────────────────────
+                  _SectionTitle(
+                    title: 'Populaires',
+                    onTap: () => widget.onTabChange(1),
+                  ).animate().fadeIn(delay: 350.ms),
+                  const SizedBox(height: 14),
+
+                  Consumer<ServiceProvider>(
+                    builder: (context, sp, _) {
+                      if (sp.isLoading && sp.services.isEmpty) {
+                        return _ServicesShimmer();
+                      }
+                      if (sp.hasError && sp.services.isEmpty) {
+                        return _ErrorWidget(
+                          message: sp.errorMessage ?? 'Erreur de connexion',
+                          onRetry: () => sp.fetchServices(),
+                        );
+                      }
+                      if (sp.services.isEmpty) {
+                        return const _EmptyWidget(
+                            message: 'Aucun service disponible');
+                      }
+                      return SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          clipBehavior: Clip.none,
+                          itemCount:
+                              sp.services.length + (sp.hasMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == sp.services.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.secondary,
+                                  ),
+                                ),
+                              );
+                            }
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ServiceDetailScreen(
+                                      service: sp.services[index]),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.44,
+                                child: ServiceCard(service: sp.services[index]),
+                              ),
+                            ).animate()
+                                .fadeIn(delay: (index * 60).ms)
+                                .slideX(begin: 0.1);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── Mieux notés ───────────────────────────────────────
+                  _SectionTitle(
+                    title: 'Les mieux notés',
+                    onTap: () => widget.onTabChange(1),
+                  ).animate().fadeIn(delay: 400.ms),
+                  const SizedBox(height: 14),
+
+                  Consumer<ServiceProvider>(
+                    builder: (context, sp, _) {
+                      if (sp.isTopRatedLoading &&
+                          sp.topRatedServices.isEmpty) {
+                        return _ServicesShimmer();
+                      }
+                      if (sp.topRatedServices.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          clipBehavior: Clip.none,
+                          itemCount: sp.topRatedServices.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ServiceDetailScreen(
+                                      service: sp.topRatedServices[index]),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.44,
+                                child: ServiceCard(
+                                    service: sp.topRatedServices[index]),
+                              ),
+                            ).animate()
+                                .fadeIn(delay: (index * 60).ms)
+                                .slideX(begin: 0.1);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── Activités (données réelles API) ───────────────────
+                  _SectionTitle(
+                    title: 'Activités',
+                    onTap: () => widget.onTabChange(1),
+                  ).animate().fadeIn(delay: 450.ms),
+                  const SizedBox(height: 14),
+
+                  Consumer<ServiceProvider>(
+                    builder: (context, sp, _) {
+                      if (sp.isActivitiesLoading && sp.activityServices.isEmpty) {
+                        return _ServicesShimmer();
+                      }
+                      if (sp.activityServices.isEmpty) {
+                        return const _EmptyWidget(
+                            message: 'Aucune activité disponible pour le moment');
+                      }
+                      return SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          clipBehavior: Clip.none,
+                          itemCount: sp.activityServices.length,
+                          itemBuilder: (context, index) {
+                            final activity = sp.activityServices[index];
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ServiceDetailScreen(service: activity),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.44,
+                                child: ServiceCard(service: activity),
+                              ),
+                            )
+                                .animate()
+                                .fadeIn(delay: (index * 80).ms)
+                                .slideX(begin: 0.1);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 120),
+                ],
+              ),
             ),
           ),
         ),
@@ -340,31 +605,55 @@ class _HomeContentState extends State<HomeContent> {
   }
 }
 
+// ── Widgets partagés ───────────────────────────────────────────────────────
+
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final String action;
   final VoidCallback onTap;
 
-  const _SectionTitle(
-      {required this.title, required this.action, required this.onTap});
+  const _SectionTitle({required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
+        // Accent doré
+        Container(
+          width: 4,
+          height: 20,
+          margin: const EdgeInsets.only(right: 10),
+          decoration: BoxDecoration(
+            color: AppColors.secondary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            title,
             style: GoogleFonts.playfairDisplay(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary)),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
         GestureDetector(
           onTap: onTap,
-          child: const Text('Voir tout',
-              style: TextStyle(
-                  color: AppColors.primary,
+          child: Row(
+            children: [
+              const Text(
+                'Voir tout',
+                style: TextStyle(
+                  color: AppColors.secondary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14)),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_forward_ios,
+                  color: AppColors.secondary, size: 12),
+            ],
+          ),
         ),
       ],
     );
@@ -380,13 +669,16 @@ class _ServicesShimmer extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: 3,
         itemBuilder: (context, _) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: AppColors.glassFill,
+          highlightColor: AppColors.glassFillMed,
           child: Container(
             width: 180,
             margin: const EdgeInsets.only(right: 16, bottom: 8, top: 8),
             decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(24)),
+              color: AppColors.glassFill,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.glassBorder),
+            ),
           ),
         ),
       ),
@@ -402,10 +694,12 @@ class _ErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
+          const Icon(Icons.wifi_off,
+              size: 40, color: AppColors.textSecondary),
           const SizedBox(height: 8),
           Text(message,
               style: const TextStyle(color: AppColors.textSecondary),
@@ -413,9 +707,8 @@ class _ErrorWidget extends StatelessWidget {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: AppColors.background),
             label: const Text('Réessayer'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
           ),
         ],
       ),
@@ -429,60 +722,17 @@ class _EmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 40),
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       child: Column(
         children: [
-          const Icon(Icons.search_off, size: 48, color: Colors.grey),
+          const Icon(Icons.search_off,
+              size: 40, color: AppColors.textSecondary),
           const SizedBox(height: 8),
           Text(message,
               style: const TextStyle(color: AppColors.textSecondary),
               textAlign: TextAlign.center),
         ],
-      ),
-    );
-  }
-}
-
-class _FeatureButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _FeatureButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 30),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

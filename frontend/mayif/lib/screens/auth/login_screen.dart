@@ -1,14 +1,16 @@
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
+import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/constants/app_colors.dart';
-import '../../widgets/common/custom_button.dart';
-import '../../widgets/common/custom_text_field.dart';
-import '../../services/api_service.dart';
-import 'register_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/constants/app_colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/api_service.dart';
+import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/glass_field.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,15 +20,21 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _emailController    = TextEditingController();
   final _passwordController = TextEditingController();
-
+  bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _handleLogin() async {
-    // ── Validation côté client ──────────────────────────────────────────────
-    final email = _emailController.text.trim();
+    final email    = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
@@ -34,214 +42,181 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() { _isLoading = true; _errorMessage = null; });
 
-    final auth = context.read<AuthProvider>();
+    final auth    = context.read<AuthProvider>();
     final success = await auth.login(email, password);
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  if (success) {
-    final role = auth.role;
-
-    if (role == 'PROFESSIONNEL') {
-      Navigator.pushReplacementNamed(context, '/dashboard-pro');
-    } else if (role == 'STAFF' || role == 'ADMIN') {
-      final token = auth.token;
-      final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-      final url = Uri.parse('$baseUrl/dashboard/auto-login/?token=$token');
-      
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (success) {
+      final role = auth.role;
+      if (role == 'PROFESSIONNEL') {
+        Navigator.pushReplacementNamed(context, '/dashboard-pro');
+      } else if (role == 'STAFF' || role == 'ADMIN') {
+        // Obtenir un code usage unique (60s) pour éviter le JWT dans l'URL
+        try {
+          final codeResponse = await ApiService.post('/auth/dashboard-code/', {});
+          if (codeResponse.statusCode == 200) {
+            final data = jsonDecode(codeResponse.body);
+            final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+            final url = Uri.parse('$baseUrl/dashboard/auto-login/?code=${data['code']}');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
+          }
+        } catch (_) {}
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
       }
-      setState(() => _errorMessage = null);
     } else {
-      Navigator.pushReplacementNamed(context, '/home');
+      setState(() => _errorMessage = auth.errorMessage);
     }
-  } else {
-    setState(() => _errorMessage = auth.errorMessage);
-  }
 
-  setState(() => _isLoading = false);
-}
+    if (mounted) setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // Image de fond avec overlay
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/monument_1.jpg'),
-                fit: BoxFit.cover,
-              ),
+          // ── 1. Image de fond Togo ───────────────────────────────────
+          Image.asset(
+            'assets/images/monument_1.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: AppColors.background,
             ),
-            child: Container(color: Colors.black.withValues(alpha: 0.4)),
           ),
 
-          // Contenu principal
+          // ── 2. Overlay dégradé vert foncé ──────────────────────────
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF071A0B).withValues(alpha: 0.45),
+                  const Color(0xFF071A0B).withValues(alpha: 0.75),
+                  const Color(0xFF071A0B).withValues(alpha: 0.97),
+                ],
+                stops: const [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+
+          // ── 3. Contenu ─────────────────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 40),
-                  // Logo
-                  Hero(
-                    tag: 'logo',
-                    child: Image.asset('assets/images/logo.png', height: 120),
-                  ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 48),
 
-                  const SizedBox(height: 20),
-                  Text(
-                    'Bienvenue au Togo 🌍',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.3),
+                    // Logo avec halo doré
+                    _LogoWithGlow()
+                        .animate()
+                        .scale(
+                          begin: const Offset(0.6, 0.6),
+                          end: const Offset(1.0, 1.0),
+                          duration: 700.ms,
+                          curve: Curves.elasticOut,
+                        )
+                        .fadeIn(duration: 400.ms),
 
-                  Text(
-                    'L\'aventure vous attend',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ).animate().fadeIn(delay: 400.ms),
+                    const SizedBox(height: 20),
 
-                  const SizedBox(height: 40),
+                    // Titre principal
+                    Text(
+                      'MAYI',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 42,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 3,
+                      ),
+                    )
+                        .animate()
+                        .fadeIn(delay: 250.ms, duration: 500.ms)
+                        .slideY(begin: 0.25, curve: Curves.easeOut),
 
-                  // Formulaire avec Glassmorphism
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                    const SizedBox(height: 6),
+
+                    // Tagline en or
+                    Text(
+                      'L\'aventure vous attend 🚗',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
+                    )
+                        .animate()
+                        .fadeIn(delay: 400.ms, duration: 500.ms),
+
+                    const SizedBox(height: 48),
+
+                    // Card glassmorphism
+                    _LoginCard(
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      obscurePassword: _obscurePassword,
+                      onTogglePassword: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                      errorMessage: _errorMessage,
+                      isLoading: _isLoading,
+                      onLogin: _handleLogin,
+                    )
+                        .animate()
+                        .fadeIn(delay: 550.ms, duration: 600.ms)
+                        .slideY(
+                          begin: 0.35,
+                          end: 0,
+                          delay: 550.ms,
+                          duration: 600.ms,
+                          curve: Curves.easeOutCubic,
                         ),
-                      ],
-                    ),
-                    child: Column(
+
+                    const SizedBox(height: 28),
+
+                    // Lien inscription
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CustomTextField(
-                          controller: _emailController,
-                          label: 'Email ou Nom d\'utilisateur',
-                          hint: '',
-                          icon: Icons.email_outlined,
-                        ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: _passwordController,
-                          label: 'Mot de passe',
-                          hint: '********',
-                          icon: Icons.lock_outline,
-                          isPassword: true,
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
-                            child: const Text(
-                              'Mot de passe oublié ?',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
+                        Text(
+                          'Pas encore membre ? ',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        if (_errorMessage != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        CustomButton(
-                          text: 'Se connecter',
-                          onPressed: _handleLogin,
-                          isLoading: _isLoading,
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
-
-                  const SizedBox(height: 30),
-
-                  // Séparateur
-                  Row(
-                    children: [
-                      const Expanded(child: Divider(color: Colors.white)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'ou continuer avec',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider(color: Colors.white)),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Social Login UI
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _socialButton('assets/images/google.png', () {}),
-                      const SizedBox(width: 20),
-                      _socialButton('assets/images/facebook.png', () {}),
-                    ],
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Lien Inscription
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Pas encore membre ? ',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
+                        GestureDetector(
+                          onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RegisterScreen(),
+                                builder: (_) => const RegisterScreen()),
+                          ),
+                          child: Text(
+                            'S\'inscrire',
+                            style: GoogleFonts.poppins(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.secondary,
                             ),
-                          );
-                        },
-                        child: const Text(
-                          'S\'inscrire',
-                          style: TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                      ],
+                    ).animate().fadeIn(delay: 800.ms),
+
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
           ),
@@ -249,28 +224,252 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
 
-  Widget _socialButton(String asset, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
+// ── Logo avec halo doré ────────────────────────────────────────────────────
+class _LogoWithGlow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Lueur dorée prononcée
+            Container(
+              width: 145,
+              height: 145,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary.withValues(alpha: 0.45),
+                    blurRadius: 70,
+                    spreadRadius: 24,
+                  ),
+                ],
+              ),
+            ),
+            // Cercle or semi-transparent — logo coupé en cercle à l'intérieur
+            Container(
+              width: 112,
+              height: 112,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.6),
+                  width: 1.8,
+                ),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.cover,
+                  // Recadre vers le haut pour ne montrer que l'icône circulaire
+                  alignment: const Alignment(0, -0.35),
+                ),
+              ),
             ),
           ],
         ),
-        child: const Icon(
-          Icons.account_circle_outlined,
-          size: 30,
-          color: AppColors.textSecondary,
-        ), // Placeholder for social icons
+        const SizedBox(height: 10),
+        // "Togo Tourism" flottant sous le cercle — discret, doré
+        Text(
+          'Togo Tourism',
+          style: GoogleFonts.playfairDisplay(
+            color: AppColors.secondary.withValues(alpha: 0.7),
+            fontSize: 13,
+            fontStyle: FontStyle.italic,
+            letterSpacing: 1.8,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Card glassmorphism ─────────────────────────────────────────────────────
+class _LoginCard extends StatelessWidget {
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool obscurePassword;
+  final VoidCallback onTogglePassword;
+  final String? errorMessage;
+  final bool isLoading;
+  final VoidCallback onLogin;
+
+  const _LoginCard({
+    required this.emailController,
+    required this.passwordController,
+    required this.obscurePassword,
+    required this.onTogglePassword,
+    required this.errorMessage,
+    required this.isLoading,
+    required this.onLogin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF071A0B).withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: AppColors.secondary.withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Titre de la card
+              Text(
+                'Connexion',
+                style: GoogleFonts.playfairDisplay(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Accédez à votre espace Mayi',
+                style: GoogleFonts.poppins(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // Champ email
+              GlassField(
+                controller: emailController,
+                hint: 'Email ou nom d\'utilisateur',
+                icon: Icons.person_outline_rounded,
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              const SizedBox(height: 14),
+
+              // Champ mot de passe
+              GlassField(
+                controller: passwordController,
+                hint: 'Mot de passe',
+                icon: Icons.lock_outline_rounded,
+                obscureText: obscurePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  onPressed: onTogglePassword,
+                ),
+              ),
+
+              // Mot de passe oublié
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/forgot-password'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Mot de passe oublié ?',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Message d'erreur
+              if (errorMessage != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: Colors.redAccent, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          errorMessage!,
+                          style: const TextStyle(
+                              color: Colors.redAccent, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Bouton or
+              CustomButton(
+                text: 'Se connecter',
+                onPressed: onLogin,
+                isLoading: isLoading,
+                gradient: AppColors.goldGradient,
+                textColor: AppColors.background,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Séparateur
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        thickness: 1),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'Togo Tourism',
+                      style: GoogleFonts.playfairDisplay(
+                        color: AppColors.secondary.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        thickness: 1),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
