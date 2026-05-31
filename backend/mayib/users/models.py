@@ -14,6 +14,8 @@ class Utilisateur(AbstractUser):
         SUPPORT       = 'SUPPORT',       'Équipe support client'
         ADMIN         = 'ADMIN',         'Administrateur'
  
+    email = models.EmailField(unique=True, blank=True, verbose_name="Email")
+
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
