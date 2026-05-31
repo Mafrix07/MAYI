@@ -1,7 +1,9 @@
 import csv
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .permissions import staff_required
 from users.models import Utilisateur
 from reservations.models import Reservation
@@ -15,32 +17,57 @@ from django.db.models.functions import TruncDate
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as django_logout
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 
 def auto_login(request):
-    """Connexion automatique depuis Flutter via JWT"""
+    """Connexion automatique depuis Flutter.
+
+    Priorité 1 : code usage unique stocké en cache (60s) — sécurisé.
+    Priorité 2 : JWT en fallback pour compatibilité ascendante.
+    """
+    User = get_user_model()
+
+    # ── Méthode sécurisée : code usage unique ─────────────────────────────
+    code = request.GET.get('code')
+    if code:
+        cache_key = f'dashboard_code_{code}'
+        user_id = cache.get(cache_key)
+        if not user_id:
+            return redirect('dashboard:login')
+        cache.delete(cache_key)          # usage unique — invalide immédiatement
+        try:
+            user = User.objects.get(id=user_id)
+            if user.role not in ['STAFF', 'ADMIN']:
+                return redirect('dashboard:login')
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect('dashboard:index')
+        except User.DoesNotExist:
+            return redirect('dashboard:login')
+
+    # ── Fallback : JWT (déprécié, à supprimer en production) ──────────────
     token = request.GET.get('token')
     if not token:
         return redirect('dashboard:login')
     try:
-        # Vérifier et décoder le token JWT
         access_token = AccessToken(token)
         user_id = access_token['user_id']
-        User = get_user_model()
         user = User.objects.get(id=user_id)
-        # Vérifier que c'est bien un STAFF ou ADMIN
         if user.role not in ['STAFF', 'ADMIN']:
             return redirect('dashboard:login')
-        # Créer la session Django
-        login(request, user,
-            backend='django.contrib.auth.backends.ModelBackend')
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('dashboard:index')
     except Exception:
         return redirect('dashboard:login')
 class MayiLoginView(LoginView):
     template_name = 'dashboard/mayi_login.html'
+
+
+@require_POST
+def logout_view(request):
+    django_logout(request)
+    return redirect('dashboard:login')
 
 @staff_required
 def index(request):
@@ -136,6 +163,7 @@ def user_detail(request, pk):
     return render(request, 'dashboard/users/detail.html', context)
 
 @staff_required
+@require_POST
 def user_toggle_status(request, pk):
     user_obj = get_object_or_404(Utilisateur, pk=pk)
     if user_obj == request.user:
@@ -143,9 +171,8 @@ def user_toggle_status(request, pk):
     else:
         user_obj.is_active = not user_obj.is_active
         user_obj.save()
-        status = "activé" if user_obj.is_active else "désactivé"
-        messages.success(request, f"L'utilisateur {user_obj.username} a été {status}.")
-    
+        etat = "activé" if user_obj.is_active else "désactivé"
+        messages.success(request, f"L'utilisateur {user_obj.username} a été {etat}.")
     return redirect(request.META.get('HTTP_REFERER', 'dashboard:user_list'))
 
 @staff_required
@@ -202,12 +229,13 @@ def service_detail(request, pk):
     return render(request, 'dashboard/services/detail.html', context)
 
 @staff_required
+@require_POST
 def service_toggle_status(request, pk):
     service_obj = get_object_or_404(Service, pk=pk)
     service_obj.est_actif = not service_obj.est_actif
     service_obj.save()
-    status = "activé" if service_obj.est_actif else "désactivé"
-    messages.success(request, f"Le service {service_obj.nom} a été {status}.")
+    etat = "activé" if service_obj.est_actif else "désactivé"
+    messages.success(request, f"Le service {service_obj.nom} a été {etat}.")
     return redirect(request.META.get('HTTP_REFERER', 'dashboard:service_list'))
 
 @staff_required
@@ -275,8 +303,8 @@ def reservation_export_csv(request):
     
     writer = csv.writer(response)
     writer.writerow(['ID', 'Client', 'Service', 'Date Début', 'Prix Total', 'Statut', 'Date Création'])
-    
-    reservations = Reservation.objects.all().select_related('touriste', 'service')
+
+    reservations = Reservation.objects.all().select_related('touriste', 'service').iterator(chunk_size=500)
     for res in reservations:
         writer.writerow([
             res.pk, 

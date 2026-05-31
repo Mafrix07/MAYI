@@ -79,9 +79,12 @@
                     <a href="{% url 'dashboard:service_detail' s.pk %}" class="btn btn-sm btn-outline-primary" title="Voir détails">
                       <i class="mdi mdi-eye"></i>
                     </a>
-                    <a href="{% url 'dashboard:service_toggle_status' s.pk %}" class="btn btn-sm {% if s.est_actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if s.est_actif %}Désactiver{% else %}Activer{% endif %}">
-                      <i class="mdi {% if s.est_actif %}mdi-close-circle{% else %}mdi-check-circle{% endif %}"></i>
-                    </a>
+                    <form method="post" action="{% url 'dashboard:service_toggle_status' s.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm {% if s.est_actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if s.est_actif %}Désactiver{% else %}Activer{% endif %}">
+                        <i class="mdi {% if s.est_actif %}mdi-close-circle{% else %}mdi-check-circle{% endif %}"></i>
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>

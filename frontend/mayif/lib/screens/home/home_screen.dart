@@ -132,6 +132,10 @@ class _HomeContentState extends State<HomeContent> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.user == null && auth.isAuthenticated) {
+        auth.fetchProfile();
+      }
       final sp = context.read<ServiceProvider>();
       sp.fetchServices();
       sp.fetchTopRated();

@@ -1,10 +1,14 @@
 {% load static %}
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav">
+
+    <!-- Profil connecté -->
     <li class="nav-item nav-profile">
       <a href="#" class="nav-link">
         <div class="profile-image">
-          <img class="img-xs rounded-circle" src="{% if user.photo_profil %}{{ user.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}" alt="profile image">
+          <img class="img-xs rounded-circle"
+               src="{% if user.photo_profil %}{{ user.photo_profil.url }}{% else %}{% static 'dashboard/assets/images/faces/face8.jpg' %}{% endif %}"
+               alt="Photo profil">
           <div class="dot-indicator bg-success"></div>
         </div>
         <div class="text-wrapper">
@@ -13,49 +17,64 @@
         </div>
       </a>
     </li>
-    <li class="nav-item nav-category">Main Menu</li>
+
+    <li class="nav-item nav-category">Navigation</li>
+
     <li class="nav-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:index' %}">
-        <i class="menu-icon mdi mdi-television"></i>
-        <span class="menu-title">Dashboard</span>
+        <i class="menu-icon mdi mdi-view-dashboard"></i>
+        <span class="menu-title">Tableau de bord</span>
       </a>
     </li>
-    
-    <li class="nav-item nav-category">Management</li>
-    
+
+    <li class="nav-item nav-category">Gestion</li>
+
     <li class="nav-item {% if 'users' in request.path %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:user_list' %}">
         <i class="menu-icon mdi mdi-account-multiple"></i>
         <span class="menu-title">Utilisateurs</span>
       </a>
     </li>
-    
+
     <li class="nav-item {% if 'services' in request.path %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:service_list' %}">
         <i class="menu-icon mdi mdi-briefcase"></i>
         <span class="menu-title">Services</span>
       </a>
     </li>
-    
+
     <li class="nav-item {% if 'reservations' in request.path %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:reservation_list' %}">
         <i class="menu-icon mdi mdi-calendar-check"></i>
         <span class="menu-title">Réservations</span>
       </a>
     </li>
-    
+
+    <li class="nav-item nav-category">Modération</li>
+
     <li class="nav-item {% if 'reviews' in request.path %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:review_list' %}">
         <i class="menu-icon mdi mdi-comment-account"></i>
-        <span class="menu-title">Avis</span>
+        <span class="menu-title">
+          Avis
+          {% if pending_reviews_count > 0 %}
+            <span class="badge badge-warning badge-pill ml-1">{{ pending_reviews_count }}</span>
+          {% endif %}
+        </span>
       </a>
     </li>
-    
+
     <li class="nav-item {% if 'support' in request.path %}active{% endif %}">
       <a class="nav-link" href="{% url 'dashboard:support_list' %}">
         <i class="menu-icon mdi mdi-headset"></i>
-        <span class="menu-title">Support</span>
+        <span class="menu-title">
+          Support
+          {% if open_tickets_count > 0 %}
+            <span class="badge badge-warning badge-pill ml-1">{{ open_tickets_count }}</span>
+          {% endif %}
+        </span>
       </a>
     </li>
+
   </ul>
 </nav>

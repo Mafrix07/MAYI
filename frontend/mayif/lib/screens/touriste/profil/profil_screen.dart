@@ -9,8 +9,24 @@ import '../../../widgets/common/custom_text_field.dart';
 import '../../../widgets/common/glass_card.dart';
 import '../../../core/constants/app_colors.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
+
+  @override
+  State<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends State<ProfilScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.user == null && auth.isAuthenticated) {
+        auth.fetchProfile();
+      }
+    });
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(

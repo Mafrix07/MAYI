@@ -33,7 +33,7 @@ class ReservationSerializer(serializers.ModelSerializer):
             'montant_acompte', 'solde_restant', 'paiement_acompte', 
             'paiement_solde', 'date_creation'
         ]
-        read_only_fields = ['statut', 'prix_total', 'montant_acompte', 'solde_restant']
+        read_only_fields = ['prix_total', 'montant_acompte', 'solde_restant']
 
     def validate(self, data):
         date_debut = data.get('date_debut')

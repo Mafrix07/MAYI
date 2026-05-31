@@ -33,8 +33,8 @@ class _MesReservationsScreenState extends State<MesReservationsScreen>
     });
   }
 
-  List<dynamic> _filtered(String statut) =>
-      _reservations.where((r) => r['statut'] == statut).toList();
+  List<dynamic> _filtered(List<String> statuts) =>
+      _reservations.where((r) => statuts.contains(r['statut'])).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +72,13 @@ class _MesReservationsScreenState extends State<MesReservationsScreen>
                   controller: _tabController,
                   children: [
                     _ReservationList(
-                        reservations: _filtered('EN_ATTENTE'),
+                        reservations: _filtered(['EN_ATTENTE', 'ACOMPTE_EN_VERIFICATION']),
                         onAnnuler: _annuler),
                     _ReservationList(
-                        reservations: _filtered('CONFIRMEE'),
-                        onAnnuler: _annuler),
+                        reservations: _filtered(['CONFIRMEE']),
+                        onAnnuler: null),
                     _ReservationList(
-                        reservations: _filtered('ANNULEE'),
+                        reservations: _filtered(['ANNULEE']),
                         onAnnuler: null),
                   ],
                 ),

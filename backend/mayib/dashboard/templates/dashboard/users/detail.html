@@ -36,9 +36,12 @@
         </div>
         
         <div class="mt-4">
-            <a href="{% url 'dashboard:user_toggle_status' user_obj.pk %}" class="btn btn-block {% if user_obj.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
-                {% if user_obj.is_active %}Désactiver le compte{% else %}Activer le compte{% endif %}
-            </a>
+          <form method="post" action="{% url 'dashboard:user_toggle_status' user_obj.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-block {% if user_obj.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+              {% if user_obj.is_active %}Désactiver le compte{% else %}Activer le compte{% endif %}
+            </button>
+          </form>
         </div>
       </div>
     </div>

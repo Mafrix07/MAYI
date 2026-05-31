@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 
@@ -13,6 +14,16 @@ class AuthProvider with ChangeNotifier {
   String? get role => _role;
   bool _isReady = false;
   bool get isReady => _isReady;
+
+  bool _onboardingComplete = false;
+  bool get onboardingComplete => _onboardingComplete;
+
+  Future<void> completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', true);
+    _onboardingComplete = true;
+    notifyListeners();
+  }
 
   AuthProvider() {
     ApiService.onUnauthorized = () {
@@ -175,6 +186,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> tryAutoLogin() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+
       final token = await _storage.read(key: 'token');
       if (token != null) {
         _token = token;
