@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/theme_colors.dart';
 import '../../../services/reservation_service.dart';
 import '../../../widgets/common/glass_card.dart';
 
@@ -60,12 +62,11 @@ class _ReservationsRecuesScreenState extends State<ReservationsRecuesScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.backgroundMid,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: AppColors.backgroundCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           '${statut == 'CONFIRMEE' ? 'Confirmer' : 'Rejeter'} la réservation',
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Voulez-vous vraiment $label cette réservation ?',
@@ -74,17 +75,14 @@ class _ReservationsRecuesScreenState extends State<ReservationsRecuesScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Annuler', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               statut == 'CONFIRMEE' ? 'Confirmer' : 'Rejeter',
               style: TextStyle(
-                  color: statut == 'CONFIRMEE'
-                      ? AppColors.primaryLight
-                      : Colors.redAccent,
+                  color: statut == 'CONFIRMEE' ? AppColors.primaryLight : Colors.redAccent,
                   fontWeight: FontWeight.bold),
             ),
           ),
@@ -97,91 +95,77 @@ class _ReservationsRecuesScreenState extends State<ReservationsRecuesScreen>
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(statut == 'CONFIRMEE'
-            ? 'Réservation confirmée ✅'
-            : 'Réservation rejetée'),
-        backgroundColor: statut == 'CONFIRMEE'
-            ? AppColors.backgroundCard
-            : AppColors.backgroundCard,
+        content: Text(statut == 'CONFIRMEE' ? 'Réservation confirmée ✅' : 'Réservation rejetée'),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ));
       _load();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Erreur lors de la mise à jour'),
-          backgroundColor: AppColors.backgroundCard,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Erreur lors de la mise à jour'),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+      ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Réservations reçues'),
-        backgroundColor: AppColors.backgroundMid,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.secondary,
-          labelColor: AppColors.secondary,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          tabs: [
-            Tab(
-                text:
-                    'En attente (${_filtered(['EN_ATTENTE', 'ACOMPTE_EN_VERIFICATION']).length})'),
-            Tab(text: 'Confirmées (${_filtered(['CONFIRMEE']).length})'),
-            const Tab(text: 'Annulées'),
-          ],
+    return NatureBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Réservations Reçues', 
+              style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, color: context.primaryText)),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () => Navigator.pop(context),
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.secondary,
+            indicatorWeight: 3,
+            labelColor: AppColors.secondary,
+            unselectedLabelColor: context.hintText,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            tabs: const [
+              Tab(text: 'À traiter'),
+              Tab(text: 'Confirmées'),
+              Tab(text: 'Annulées'),
+            ],
+          ),
         ),
-      ),
-      body: NatureBackground(
-        child: _isLoading
-            ? const Center(
-                child:
-                    CircularProgressIndicator(color: AppColors.secondary))
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: AppColors.secondary))
             : _error != null
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.wifi_off,
-                            size: 48, color: AppColors.textSecondary),
+                        const Icon(Icons.wifi_off, size: 48, color: Colors.white24),
                         const SizedBox(height: 12),
-                        Text(_error!,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary)),
+                        Text(_error!, style: TextStyle(color: context.secondaryText)),
                         const SizedBox(height: 12),
                         ElevatedButton(
                             onPressed: _load,
+                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                             child: const Text('Réessayer')),
                       ],
                     ),
                   )
                 : RefreshIndicator(
                     color: AppColors.secondary,
-                    backgroundColor: AppColors.backgroundCard,
                     onRefresh: _load,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
                         _ReservationList(
-                          reservations: _filtered(
-                              ['EN_ATTENTE', 'ACOMPTE_EN_VERIFICATION']),
-                          onConfirmer: (id) =>
-                              _changerStatut(id, 'CONFIRMEE'),
-                          onRejeter: (id) =>
-                              _changerStatut(id, 'ANNULEE'),
+                          reservations: _filtered(['EN_ATTENTE', 'ACOMPTE_EN_VERIFICATION']),
+                          onConfirmer: (id) => _changerStatut(id, 'CONFIRMEE'),
+                          onRejeter: (id) => _changerStatut(id, 'ANNULEE'),
                           showActions: true,
                         ),
                         _ReservationList(
@@ -220,27 +204,15 @@ class _ReservationList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              showActions
-                  ? Icons.hourglass_empty
-                  : Icons.check_circle_outline,
-              size: 64,
-              color: AppColors.textSecondary,
-            ),
+            const Icon(Icons.receipt_long_outlined, size: 64, color: Colors.white10),
             const SizedBox(height: 16),
-            Text(
-              showActions
-                  ? 'Aucune réservation en attente'
-                  : 'Aucune réservation ici',
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 16),
-            ),
+            Text('Aucune réservation trouvée', style: TextStyle(color: context.secondaryText, fontSize: 16)),
           ],
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       itemCount: reservations.length,
       itemBuilder: (context, i) => _ReservationCard(
         reservation: reservations[i],
@@ -267,31 +239,11 @@ class _ReservationCard extends StatelessWidget {
 
   Color _statutColor(String statut) {
     switch (statut) {
-      case 'CONFIRMEE':
-        return AppColors.primaryLight;
-      case 'EN_ATTENTE':
-        return Colors.orange;
-      case 'ACOMPTE_EN_VERIFICATION':
-        return Colors.blue;
-      case 'ANNULEE':
-        return Colors.redAccent;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
-
-  String _statutLabel(String statut) {
-    switch (statut) {
-      case 'EN_ATTENTE':
-        return 'En attente';
-      case 'ACOMPTE_EN_VERIFICATION':
-        return 'Acompte reçu';
-      case 'CONFIRMEE':
-        return 'Confirmée';
-      case 'ANNULEE':
-        return 'Annulée';
-      default:
-        return statut;
+      case 'CONFIRMEE': return AppColors.primaryLight;
+      case 'EN_ATTENTE': return Colors.orange;
+      case 'ACOMPTE_EN_VERIFICATION': return Colors.blueAccent;
+      case 'ANNULEE': return Colors.redAccent;
+      default: return AppColors.textSecondary;
     }
   }
 
@@ -300,8 +252,7 @@ class _ReservationCard extends StatelessWidget {
     final statut = reservation['statut'] ?? '';
     final id = reservation['id'] as int;
     final serviceDetails = reservation['service_details'];
-    final serviceTitre =
-        serviceDetails?['nom'] ?? 'Service #${reservation['service']}';
+    final serviceTitre = serviceDetails?['nom'] ?? 'Service #${reservation['service']}';
     final dateDebut = reservation['date_debut'] ?? '';
     final dateFin = reservation['date_fin'];
     final nombrePersonnes = reservation['nombre_personnes'] ?? 1;
@@ -309,89 +260,68 @@ class _ReservationCard extends StatelessWidget {
     final color = _statutColor(statut);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       child: GlassCard(
-        borderRadius: 20,
+        borderRadius: 24,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête : service + badge statut
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    serviceTitre,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppColors.textPrimary),
-                  ),
+                  child: Text(serviceTitre, 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: context.primaryText)),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: color.withValues(alpha: 0.4)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
                   ),
                   child: Text(
-                    _statutLabel(statut),
-                    style: TextStyle(
-                        color: color,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold),
+                    statut.replaceAll('_', ' '),
+                    style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            _InfoRow(Icons.calendar_today,
-                dateFin != null ? '$dateDebut → $dateFin' : dateDebut),
-            const SizedBox(height: 4),
-            _InfoRow(Icons.people_outline,
-                '$nombrePersonnes personne${nombrePersonnes > 1 ? 's' : ''}'),
-            const SizedBox(height: 4),
-            _InfoRow(Icons.payments_outlined,
-                '$montantAcompte FCFA (acompte)'),
+            _InfoRow(Icons.calendar_today_rounded, dateFin != null ? '$dateDebut → $dateFin' : dateDebut),
+            const SizedBox(height: 8),
+            _InfoRow(Icons.person_outline_rounded, '$nombrePersonnes voyageur${nombrePersonnes > 1 ? 's' : ''}'),
+            const SizedBox(height: 8),
+            _InfoRow(Icons.payments_outlined, '$montantAcompte FCFA (Acompte)'),
 
-            if (showActions &&
-                (statut == 'EN_ATTENTE' ||
-                    statut == 'ACOMPTE_EN_VERIFICATION')) ...[
-              const SizedBox(height: 16),
-              Divider(
-                  height: 1,
-                  color: AppColors.glassBorder),
-              const SizedBox(height: 12),
+            if (showActions && (statut == 'EN_ATTENTE' || statut == 'ACOMPTE_EN_VERIFICATION')) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: AppColors.glassBorder)),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: () => onRejeter?.call(id),
-                      icon: const Icon(Icons.close, size: 16),
-                      label: const Text('Rejeter'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.redAccent,
                         side: const BorderSide(color: Colors.redAccent),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
+                      child: const Text('Rejeter', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: () => onConfirmer?.call(id),
-                      icon: const Icon(Icons.check, size: 16),
-                      label: const Text('Confirmer'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
+                      child: const Text('Confirmer', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -413,11 +343,9 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.secondary),
-        const SizedBox(width: 6),
-        Text(text,
-            style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 13)),
+        Icon(icon, size: 16, color: AppColors.secondary),
+        const SizedBox(width: 10),
+        Text(text, style: TextStyle(color: context.secondaryText, fontSize: 14)),
       ],
     );
   }

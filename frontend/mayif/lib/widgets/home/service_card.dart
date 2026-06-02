@@ -17,7 +17,7 @@ class ServiceCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 220,
+        height: 240,
         margin: const EdgeInsets.only(right: 14, bottom: 8, top: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
@@ -51,19 +51,48 @@ class ServiceCard extends StatelessWidget {
                 ),
               ),
 
-              // Dégradé sombre en bas
-              Positioned.fill(
+              // Dégradé chaud signature Mayi
+              const Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        AppColors.background.withValues(alpha: 0.5),
-                        AppColors.background.withValues(alpha: 0.9),
-                      ],
-                      stops: const [0.3, 0.65, 1.0],
+                    gradient: AppColors.warmOverlayGradient,
+                  ),
+                ),
+              ),
+
+              // Badge rating — haut gauche
+              Positioned(
+                top: 10,
+                left: 10,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.40),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: AppColors.secondary.withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star_rounded,
+                              color: AppColors.secondary, size: 13),
+                          const SizedBox(width: 3),
+                          Text(
+                            service.noteMoyenne.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

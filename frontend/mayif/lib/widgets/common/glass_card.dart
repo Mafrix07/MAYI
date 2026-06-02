@@ -26,6 +26,10 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultFill = isDark ? AppColors.glassFill : AppColors.lightGlassFill;
+    final defaultBorder = isDark ? AppColors.glassBorder : AppColors.lightGlassBorder;
+
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -35,10 +39,10 @@ class GlassCard extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: fillColor ?? AppColors.glassFill,
+              color: fillColor ?? defaultFill,
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: borderColor ?? AppColors.glassBorder,
+                color: borderColor ?? defaultBorder,
                 width: 1.2,
               ),
               boxShadow: shadows,
@@ -60,32 +64,70 @@ class NatureBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Stack(
       children: [
-        // Dégradé de base
+        // Dégradé de base selon le thème
         Container(
-          decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+          decoration: BoxDecoration(
+            gradient: isDark
+                ? AppColors.backgroundGradient
+                : AppColors.lightBackgroundGradient,
+          ),
         ),
 
         if (showOrbs) ...[
-          // Orb vert supérieur droit
+          // Orb solaire — haut droite (plus grand en light)
           Positioned(
-            top: -80,
-            right: -80,
-            child: _Orb(size: 280, color: AppColors.primary.withValues(alpha: 0.18)),
+            top: -120,
+            right: -120,
+            child: _Orb(
+              size: isDark ? 340 : 420,
+              color: AppColors.secondary.withValues(alpha: isDark ? 0.10 : 0.18),
+            ),
           ),
-          // Orb or central gauche
+          // Halo solaire central — light mode uniquement
+          if (!isDark)
+            Positioned(
+              top: -80,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _Orb(
+                  size: 460,
+                  color: AppColors.secondary.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+          // Orb bleu océan — milieu gauche
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.3,
-            left: -60,
-            child: _Orb(size: 200, color: AppColors.secondary.withValues(alpha: 0.07)),
+            top: MediaQuery.of(context).size.height * 0.38,
+            left: -90,
+            child: _Orb(
+              size: isDark ? 240 : 300,
+              color: AppColors.ocean.withValues(alpha: isDark ? 0.07 : 0.12),
+            ),
           ),
-          // Orb vert bas droit
+          // Orb vert palmier — bas droit
           Positioned(
-            bottom: 80,
-            right: -40,
-            child: _Orb(size: 180, color: AppColors.primaryLight.withValues(alpha: 0.12)),
+            bottom: 40,
+            right: -60,
+            child: _Orb(
+              size: isDark ? 220 : 280,
+              color: AppColors.primary.withValues(alpha: isDark ? 0.13 : 0.20),
+            ),
           ),
+          // Orb corail — bas gauche (light uniquement)
+          if (!isDark)
+            Positioned(
+              bottom: -40,
+              left: -60,
+              child: _Orb(
+                size: 200,
+                color: AppColors.accent.withValues(alpha: 0.10),
+              ),
+            ),
         ],
 
         // Contenu

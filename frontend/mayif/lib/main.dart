@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'providers/service_provider.dart';
 import 'providers/avis_provider.dart';
 import 'providers/favorite_provider.dart';
@@ -39,6 +40,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()..tryAutoLogin()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()..init()),
         ChangeNotifierProvider(create: (_) => ServiceProvider()),
         ChangeNotifierProvider(create: (_) => AvisProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
@@ -54,11 +56,14 @@ class MayiTogoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Mayi Togo Tourism',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.premiumTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.premiumTheme,
+      themeMode: themeProvider.mode,
       routes: {
         '/login':                (context) => const LoginScreen(),
         '/forgot-password':      (context) => const ForgotPasswordScreen(),

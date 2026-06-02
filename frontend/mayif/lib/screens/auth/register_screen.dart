@@ -152,21 +152,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
             errorBuilder: (_, __, ___) =>
                 Container(color: AppColors.background),
           ),
-          // Overlay
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF071A0B).withValues(alpha: 0.5),
-                  const Color(0xFF071A0B).withValues(alpha: 0.80),
-                  const Color(0xFF071A0B).withValues(alpha: 0.97),
-                ],
-                stops: const [0.0, 0.4, 1.0],
+          // Overlay adaptatif
+          Builder(builder: (context) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF071A0B).withValues(alpha: isDark ? 0.50 : 0.15),
+                    const Color(0xFF071A0B).withValues(alpha: isDark ? 0.80 : 0.45),
+                    const Color(0xFF071A0B).withValues(alpha: isDark ? 0.97 : 0.80),
+                  ],
+                  stops: const [0.0, 0.4, 1.0],
+                ),
               ),
-            ),
-          ),
+            );
+          }),
 
           SafeArea(
             child: SingleChildScrollView(
@@ -183,13 +186,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: AppColors.secondary.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2)),
+                              color: AppColors.secondary.withValues(alpha: 0.35)),
                         ),
                         child: const Icon(Icons.arrow_back_ios_new,
-                            color: Colors.white, size: 18),
+                            color: AppColors.secondary, size: 18),
                       ),
                     ),
                   ),
@@ -259,12 +262,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 16),
 
-                  Text(
-                    'Rejoignez l\'aventure',
-                    style: GoogleFonts.playfairDisplay(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                  ShaderMask(
+                    shaderCallback: (bounds) =>
+                        AppColors.sunsetOceanGradient.createShader(bounds),
+                    blendMode: BlendMode.srcIn,
+                    child: Text(
+                      'Rejoignez l\'aventure',
+                      style: GoogleFonts.playfairDisplay(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
                   ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
 
                   const SizedBox(height: 4),
@@ -279,15 +287,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
 
                   // ── Card glassmorphisme ───────────────────────────────
-                  ClipRRect(
+                  Builder(builder: (context) {
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    final cardBg = isDark
+                        ? const Color(0xFF071A0B).withValues(alpha: 0.55)
+                        : const Color(0xFFF5EFE8).withValues(alpha: 0.88);
+                    final secondaryTextColor = isDark 
+                        ? Colors.white.withValues(alpha: 0.7) 
+                        : AppColors.lightTextSecondary;
+                    final dividerColor = isDark
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : AppColors.lightGlassBorder;
+
+                    return ClipRRect(
                     borderRadius: BorderRadius.circular(28),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF071A0B)
-                              .withValues(alpha: 0.55),
+                          color: cardBg,
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
                             color:
@@ -301,7 +320,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             // ── Sélecteur de rôle ───────────────────────
                             Text('Type de compte',
                                 style: GoogleFonts.poppins(
-                                    color: AppColors.textSecondary,
+                                    color: secondaryTextColor,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600)),
                             const SizedBox(height: 10),
@@ -482,7 +501,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   _obscurePass
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: secondaryTextColor,
                                   size: 20,
                                 ),
                                 onPressed: () => setState(
@@ -503,7 +522,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   _obscureConfirm
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: secondaryTextColor,
                                   size: 20,
                                 ),
                                 onPressed: () => setState(() =>
@@ -533,8 +552,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       border: Border.all(
                                         color: _acceptTerms
                                             ? AppColors.secondary
-                                            : Colors.white
-                                                .withValues(alpha: 0.3),
+                                            : (isDark ? AppColors.glassBorder : AppColors.lightGlassBorder),
                                         width: 1.5,
                                       ),
                                     ),
@@ -548,7 +566,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   Text(
                                     'J\'accepte les conditions générales',
                                     style: GoogleFonts.poppins(
-                                      color: AppColors.textSecondary,
+                                      color: secondaryTextColor,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -602,8 +620,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               children: [
                                 Expanded(
                                   child: Divider(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.15),
+                                    color: dividerColor,
                                     thickness: 1,
                                   ),
                                 ),
@@ -622,8 +639,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 Expanded(
                                   child: Divider(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.15),
+                                    color: dividerColor,
                                     thickness: 1,
                                   ),
                                 ),
@@ -633,7 +649,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                  )
+                  );
+                  })
                       .animate()
                       .fadeIn(delay: 450.ms, duration: 600.ms)
                       .slideY(
@@ -652,7 +669,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(
                         'Déjà membre ? ',
                         style: GoogleFonts.poppins(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 14,
                         ),
                       ),
@@ -708,29 +725,31 @@ class _RoleCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.06),
+              ? AppColors.primary.withValues(alpha: 0.25)
+              : AppColors.secondary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? AppColors.secondary.withValues(alpha: 0.7)
-                : Colors.white.withValues(alpha: 0.15),
+                : AppColors.glassBorder,
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Column(
+        child: Builder(builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Column(
           children: [
             Icon(icon,
                 color: isSelected
                     ? AppColors.secondary
-                    : AppColors.textSecondary,
+                    : (isDark ? AppColors.textSecondary : AppColors.lightTextSecondary),
                 size: 26),
             const SizedBox(height: 6),
             Text(label,
                 style: TextStyle(
                     color: isSelected
-                        ? Colors.white
-                        : AppColors.textSecondary,
+                        ? (isDark ? Colors.white : AppColors.lightTextPrimary)
+                        : (isDark ? AppColors.textSecondary : AppColors.lightTextSecondary),
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -739,10 +758,11 @@ class _RoleCard extends StatelessWidget {
                 style: TextStyle(
                     color: isSelected
                         ? AppColors.secondary
-                        : AppColors.textHint,
+                        : (isDark ? AppColors.textHint : AppColors.lightTextHint),
                     fontSize: 10)),
           ],
-        ),
+        );
+        }),
       ),
     );
   }
@@ -768,24 +788,32 @@ class _ProField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.lightTextPrimary;
+    final hintColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
+        : AppColors.lightTextSecondary.withValues(alpha: 0.7);
+    final bgColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : AppColors.secondary.withValues(alpha: 0.05);
+    final borderColor = required
+        ? AppColors.secondary.withValues(alpha: 0.35)
+        : (isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.lightGlassBorder);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: bgColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: required
-                ? AppColors.secondary.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: borderColor),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(color: textColor, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4), fontSize: 14),
+          hintStyle: TextStyle(color: hintColor, fontSize: 14),
           prefixIcon: Icon(icon, color: AppColors.secondary, size: 20),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -823,18 +851,29 @@ class _PasswordStrengthBar extends StatelessWidget {
     final s = _strength;
     return Row(
       children: [
-        Text('Force : ',
-            style: TextStyle(
-                fontSize: 11, color: Colors.white.withValues(alpha: 0.5))),
+        Builder(builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Text('Force : ',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : AppColors.lightTextHint));
+        }),
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: s.factor,
-              minHeight: 5,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(s.color),
-            ),
+            child: Builder(builder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              return LinearProgressIndicator(
+                value: s.factor,
+                minHeight: 5,
+                backgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : AppColors.lightGlassBorder,
+                valueColor: AlwaysStoppedAnimation<Color>(s.color),
+              );
+            }),
           ),
         ),
         const SizedBox(width: 8),

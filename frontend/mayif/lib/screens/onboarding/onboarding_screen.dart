@@ -212,7 +212,7 @@ class _SlideData {
 // ── Vue d'un slide ────────────────────────────────────────────────────────────
 class _SlideView extends StatelessWidget {
   final _SlideData slide;
-  const _SlideView({super.key, required this.slide});
+  const _SlideView({required this.slide});
 
   @override
   Widget build(BuildContext context) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 import '../../widgets/common/glass_card.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
@@ -15,17 +16,19 @@ class WelcomeScreen extends StatelessWidget {
       body: NatureBackground(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Spacer(flex: 2),
 
-                // Logo + nom
+                // ── Brand section ────────────────────────────────────────
                 Column(
                   children: [
+                    // Logo
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 96,
+                      height: 96,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
@@ -33,9 +36,9 @@ class WelcomeScreen extends StatelessWidget {
                             width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.secondary.withValues(alpha: 0.35),
-                            blurRadius: 40,
-                            spreadRadius: 10,
+                            color: AppColors.secondary.withValues(alpha: 0.40),
+                            blurRadius: 48,
+                            spreadRadius: 12,
                           ),
                         ],
                       ),
@@ -47,113 +50,136 @@ class WelcomeScreen extends StatelessWidget {
                           errorBuilder: (_, __, ___) => const Icon(
                               Icons.travel_explore,
                               color: AppColors.secondary,
-                              size: 50),
+                              size: 48),
                         ),
                       ),
                     )
                         .animate()
                         .fadeIn(duration: 600.ms)
-                        .scale(begin: const Offset(0.8, 0.8)),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Mayi Togo',
-                      style: GoogleFonts.playfairDisplay(
-                        color: AppColors.textPrimary,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
+                        .scale(begin: const Offset(0.75, 0.75), curve: Curves.easeOut),
+
+                    const SizedBox(height: 28),
+
+                    // "Mayi" — titre gradient signature
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          AppColors.sunsetOceanGradient.createShader(bounds),
+                      blendMode: BlendMode.srcIn,
+                      child: Text(
+                        'Mayi',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 56,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          color: Colors.white,
+                        ),
                       ),
                     ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-                    const SizedBox(height: 8),
+
+                    // "T O G O" — spaced, airy
                     Text(
-                      'Explorez. Réservez. Vivez.',
-                      style: TextStyle(
-                        color: AppColors.secondary.withValues(alpha: 0.9),
-                        fontSize: 16,
-                        letterSpacing: 0.5,
+                      'T  O  G  O',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: context.secondaryText,
+                        fontSize: 15,
+                        letterSpacing: 12,
+                        fontWeight: FontWeight.w300,
                       ),
-                    ).animate().fadeIn(delay: 350.ms, duration: 500.ms),
+                    ).animate().fadeIn(delay: 320.ms, duration: 500.ms),
+
+                    const SizedBox(height: 22),
+
+                    // Séparateur orange
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 2,
+                        decoration: const BoxDecoration(
+                          gradient: AppColors.secondaryGradient,
+                        ),
+                      ).animate().scaleX(begin: 0.0, end: 1.0, delay: 420.ms, duration: 400.ms),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Tagline "Explorez · Réservez · Vivez"
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _buildTagline(context),
+                    ).animate().fadeIn(delay: 450.ms, duration: 500.ms),
                   ],
                 ),
 
                 const Spacer(flex: 3),
 
-                // Carte avec les deux boutons
-                GlassCard(
-                  borderRadius: 28,
-                  padding: const EdgeInsets.all(28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        'Bienvenue sur Mayi',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                // ── Boutons ──────────────────────────────────────────────
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Se connecter — gradient avec ombre
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.secondaryGradient,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.45),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Connectez-vous ou créez un compte pour commencer votre aventure.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textSecondary.withValues(alpha: 0.8),
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Bouton Se connecter
-                      ElevatedButton(
+                      child: ElevatedButton(
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const LoginScreen()),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
+                              borderRadius: BorderRadius.circular(18)),
                           elevation: 0,
                         ),
                         child: const Text(
                           'Se connecter',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5),
                         ),
                       ),
+                    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.25, end: 0.0, duration: 450.ms),
 
-                      const SizedBox(height: 14),
+                    const SizedBox(height: 14),
 
-                      // Bouton S'inscrire
-                      OutlinedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const RegisterScreen()),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textPrimary,
-                          side: BorderSide(
-                              color: AppColors.glassBorder.withValues(alpha: 0.6),
-                              width: 1.5),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text(
-                          'Créer un compte',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
+                    // Créer un compte — outlined avec bordure orange
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterScreen()),
                       ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 500.ms, duration: 500.ms).slideY(
-                    begin: 0.2, end: 0, delay: 500.ms, duration: 500.ms),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.primaryText,
+                        side: BorderSide(
+                            color: AppColors.secondary.withValues(alpha: 0.55),
+                            width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18)),
+                      ),
+                      child: const Text(
+                        'Créer un compte',
+                        style:
+                            TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.25, end: 0.0, duration: 450.ms),
+                  ],
+                ),
 
                 const Spacer(),
               ],
@@ -162,5 +188,24 @@ class WelcomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildTagline(BuildContext context) {
+    const items = ['Explorez', '·', 'Réservez', '·', 'Vivez'];
+    return items.map((word) {
+      final isDot = word == '·';
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: isDot ? 6.0 : 2.0),
+        child: Text(
+          word,
+          style: TextStyle(
+            color: isDot ? AppColors.secondary : context.secondaryText,
+            fontSize: isDot ? 18 : 12,
+            fontWeight: isDot ? FontWeight.bold : FontWeight.w500,
+            letterSpacing: isDot ? 0 : 0.8,
+          ),
+        ),
+      );
+    }).toList();
   }
 }

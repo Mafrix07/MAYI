@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -30,6 +31,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -37,9 +40,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             widget.label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.primaryText,
               fontSize: 14,
             ),
           ),
@@ -49,17 +52,24 @@ class _CustomTextFieldState extends State<CustomTextField> {
           obscureText: widget.isPassword ? _obscureText : false,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.primaryText),
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: TextStyle(color: AppColors.textPrimary.withValues(alpha: 0.4)),
+            hintStyle: TextStyle(
+              color: isDark ? AppColors.textHint : AppColors.lightTextSecondary.withValues(alpha: 0.7),
+            ),
             prefixIcon: Icon(widget.icon, color: AppColors.secondary, size: 20),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: isDark 
+                ? Colors.white.withValues(alpha: 0.05) 
+                : AppColors.secondary.withValues(alpha: 0.05),
             contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightGlassBorder, 
+                width: 1.5,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -73,7 +83,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 ? IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.textSecondary,
+                      color: context.secondaryText,
                       size: 20,
                     ),
                     onPressed: () => setState(() => _obscureText = !_obscureText),

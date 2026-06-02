@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/mock_data.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 import '../common/glass_card.dart';
 
 class ActivityCard extends StatelessWidget {
@@ -11,40 +12,59 @@ class ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       borderRadius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(activity.emoji, style: const TextStyle(fontSize: 28)),
-          const Spacer(),
-          Text(
-            activity.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: AppColors.textPrimary,
+          // Barre accent gradient en haut
+          Container(
+            height: 4,
+            decoration: const BoxDecoration(
+              gradient: AppColors.sunsetOceanGradient,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                activity.duration,
-                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(activity.emoji, style: const TextStyle(fontSize: 34)),
+                  const Spacer(),
+                  Text(
+                    activity.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: context.primaryText,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        activity.duration,
+                        style: TextStyle(
+                            fontSize: 10, color: context.secondaryText),
+                      ),
+                      Text(
+                        activity.price,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              Text(
-                activity.price,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

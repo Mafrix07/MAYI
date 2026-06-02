@@ -67,6 +67,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? const Color(0xFF071A0B).withValues(alpha: 0.55)
+        : const Color(0xFFF5EFE8).withValues(alpha: 0.88);
+    final titleColor = isDark ? Colors.white : AppColors.lightTextPrimary;
+    final subtitleColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -79,16 +86,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             errorBuilder: (_, __, ___) =>
                 Container(color: AppColors.background),
           ),
-          // Overlay dégradé sombre
+          // Overlay dégradé sombre adaptatif
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF071A0B).withValues(alpha: 0.55),
-                  const Color(0xFF071A0B).withValues(alpha: 0.80),
-                  const Color(0xFF071A0B).withValues(alpha: 0.97),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.55 : 0.25),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.80 : 0.50),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.97 : 0.85),
                 ],
                 stops: const [0.0, 0.4, 1.0],
               ),
@@ -134,7 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Text(
                     'Entrez votre email pour recevoir\nun lien de réinitialisation.',
                     style: GoogleFonts.poppins(
-                        color: AppColors.textSecondary, fontSize: 14),
+                        color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
                   ),
 
                   const SizedBox(height: 48),
@@ -148,8 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF071A0B)
-                              .withValues(alpha: 0.55),
+                          color: cardBg,
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
                             color: AppColors.secondary
@@ -163,7 +169,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             Text(
                               'Réinitialisation',
                               style: GoogleFonts.playfairDisplay(
-                                color: Colors.white,
+                                color: titleColor,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -172,7 +178,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             Text(
                               'Nous vous enverrons un lien sécurisé',
                               style: GoogleFonts.poppins(
-                                  color: AppColors.textSecondary,
+                                  color: subtitleColor,
                                   fontSize: 13),
                             ),
                             const SizedBox(height: 28),
