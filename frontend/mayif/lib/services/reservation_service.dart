@@ -31,6 +31,15 @@ class ReservationService {
     return response.statusCode == 200;
   }
 
+  // ── Modifier les dates (touriste) ─────────────────────────────────────────
+  static Future<bool> modifierDates(int id, {required String debut, String? fin}) async {
+    final response = await ApiService.patch('/reservations/$id/', {
+      'date_debut': debut,
+      if (fin != null) 'date_fin': fin,
+    });
+    return response.statusCode == 200;
+  }
+
   // ── Changer statut (Pro : CONFIRMEE / ANNULEE) ────────────────────────────
   static Future<bool> changerStatut(int id, String statut) async {
     final response = await ApiService.patch('/reservations/$id/', {'statut': statut});

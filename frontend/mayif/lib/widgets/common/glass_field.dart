@@ -23,22 +23,34 @@ class GlassField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.lightTextPrimary;
+    final hintColor = isDark 
+        ? Colors.white.withValues(alpha: 0.4) 
+        : AppColors.lightTextSecondary.withValues(alpha: 0.7);
+    final bgColor = isDark 
+        ? Colors.white.withValues(alpha: 0.08) 
+        : AppColors.secondary.withValues(alpha: 0.05);
+    final borderColor = isDark 
+        ? Colors.white.withValues(alpha: 0.15) 
+        : AppColors.lightGlassBorder;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: bgColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: borderColor),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
         validator: validator,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(color: textColor, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.4),
+            color: hintColor,
             fontSize: 14,
           ),
           prefixIcon: Icon(icon, color: AppColors.secondary, size: 20),

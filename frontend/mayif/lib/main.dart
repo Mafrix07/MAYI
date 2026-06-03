@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'providers/service_provider.dart';
 import 'providers/avis_provider.dart';
 import 'providers/favorite_provider.dart';
@@ -22,6 +23,8 @@ import 'screens/pro/profil/profil_pro_screen.dart';
 import 'screens/touriste/reservations/mes_reservations_screen.dart';
 import 'screens/touriste/profil/profil_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/auth/welcome_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -37,6 +40,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()..tryAutoLogin()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()..init()),
         ChangeNotifierProvider(create: (_) => ServiceProvider()),
         ChangeNotifierProvider(create: (_) => AvisProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
@@ -52,11 +56,14 @@ class MayiTogoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Mayi Togo Tourism',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.premiumTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.premiumTheme,
+      themeMode: themeProvider.mode,
       routes: {
         '/login':                (context) => const LoginScreen(),
         '/forgot-password':      (context) => const ForgotPasswordScreen(),
@@ -78,15 +85,20 @@ class MayiTogoApp extends StatelessWidget {
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
+          // Chargement initial (splash logo)
           if (!auth.isReady) return const SplashScreen();
-          if (!auth.isAuthenticated) return const LoginScreen();
-          // Redirection selon le rôle
-          switch (auth.role) {
-            case 'PROFESSIONNEL':
-              return const DashboardProScreen();
-            default:
-              return const HomeScreen();
+          // Connecté → home selon le rôle
+          if (auth.isAuthenticated) {
+            switch (auth.role) {
+              case 'PROFESSIONNEL':
+                return const DashboardProScreen();
+              default:
+                return const HomeScreen();
+            }
           }
+          // Non connecté → onboarding si jamais vu, sinon écran de bienvenue
+          if (!auth.onboardingComplete) return const OnboardingScreen();
+          return const WelcomeScreen();
         },
       ),
     );

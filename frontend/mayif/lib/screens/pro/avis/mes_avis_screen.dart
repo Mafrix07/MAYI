@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/theme_colors.dart';
 import '../../../providers/avis_provider.dart';
 import '../../../models/avis.dart';
 import '../../../widgets/common/glass_card.dart';
@@ -31,7 +32,7 @@ class _MesAvisProScreenState extends State<MesAvisProScreen> {
         title: Text('Avis Clients',
             style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.backgroundMid,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.primaryText,
         elevation: 0,
       ),
       body: NatureBackground(
@@ -49,12 +50,12 @@ class _MesAvisProScreenState extends State<MesAvisProScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.rate_review_outlined,
-                        size: 80, color: AppColors.textSecondary),
+                        size: 80, color: context.secondaryText),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Aucun avis reçu pour le moment',
                       style: TextStyle(
-                          fontSize: 16, color: AppColors.textSecondary),
+                          fontSize: 16, color: context.secondaryText),
                     ),
                   ],
                 ),
@@ -97,15 +98,15 @@ class _AvisProCard extends StatelessWidget {
                   children: [
                     Text(
                       avis.auteurNom,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.textPrimary),
+                          color: context.primaryText),
                     ),
                     Text(
                       'Le ${avis.dateCreation.split('T')[0]}',
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
+                      style: TextStyle(
+                          color: context.secondaryText, fontSize: 12),
                     ),
                   ],
                 ),
@@ -119,12 +120,12 @@ class _AvisProCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Divider(height: 1, color: AppColors.glassBorder),
+            const Divider(height: 1, color: AppColors.glassBorder),
             const SizedBox(height: 16),
             Text(
               avis.commentaire,
-              style: const TextStyle(
-                  fontSize: 14, height: 1.6, color: AppColors.textSecondary),
+              style: TextStyle(
+                  fontSize: 14, height: 1.6, color: context.secondaryText),
             ),
             const SizedBox(height: 16),
             Align(

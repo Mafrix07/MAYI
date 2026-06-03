@@ -69,7 +69,7 @@ class _HeroBannerState extends State<HeroBanner> {
     }
 
     return SizedBox(
-      height: 220,
+      height: 260,
       child: Stack(
         children: [
           PageView.builder(
@@ -86,7 +86,7 @@ class _HeroBannerState extends State<HeroBanner> {
                 children: [
                   // ── Image du service ────────────────────────────────
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(28),
                     child: imageUrl != null
                         ? Image.network(
                             imageUrl,
@@ -101,21 +101,12 @@ class _HeroBannerState extends State<HeroBanner> {
                         : _ServicePlaceholder(service: service),
                   ),
 
-                  // ── Dégradé ─────────────────────────────────────────
+                  // ── Dégradé chaud signature Mayi ────────────────────
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
+                    borderRadius: BorderRadius.circular(28),
+                    child: const DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            AppColors.background.withValues(alpha: 0.5),
-                            AppColors.background.withValues(alpha: 0.92),
-                          ],
-                          stops: const [0.3, 0.65, 1.0],
-                        ),
+                        gradient: AppColors.warmOverlayGradient,
                       ),
                     ),
                   ),

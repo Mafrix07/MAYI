@@ -11,53 +11,61 @@ class DestinationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 180,
+      width: 190,
       margin: const EdgeInsets.only(right: 16, bottom: 8, top: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: AppColors.secondary.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: [
+            // Image
             CachedNetworkImage(
               imageUrl: destination.image,
               fit: BoxFit.cover,
               height: double.infinity,
               width: double.infinity,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.8),
-                  ],
+              placeholder: (_, __) => Container(
+                decoration: const BoxDecoration(
+                  gradient: AppColors.primaryGradient,
                 ),
               ),
             ),
+
+            // Dégradé chaud signature
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: AppColors.warmOverlayGradient,
+                ),
+              ),
+            ),
+
+            // Contenu
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Badge catégorie
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                        horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary,
+                      gradient: const LinearGradient(
+                        colors: [AppColors.secondary, AppColors.accent],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -65,31 +73,32 @@ class DestinationCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     destination.title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.star,
-                        color: AppColors.secondary,
-                        size: 14,
-                      ),
+                      const Icon(Icons.star_rounded,
+                          color: AppColors.secondary, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         destination.rating.toString(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

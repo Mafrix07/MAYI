@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/avis_provider.dart';
 import '../common/custom_button.dart';
@@ -75,9 +76,9 @@ class _AvisBottomSheetState extends State<AvisBottomSheet> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Comment s\'est passée votre expérience ?',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: context.secondaryText),
           ),
           const SizedBox(height: 24),
           RatingBar.builder(

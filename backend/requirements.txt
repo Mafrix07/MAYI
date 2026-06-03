@@ -1,26 +1,29 @@
-asgiref==3.10.0
-customtkinter==5.2.2
-darkdetect==0.8.0
+# ── Framework Django ──────────────────────────────────────────────
 Django==5.2.8
+asgiref==3.10.0
+sqlparse==0.5.3
+
+# ── API REST ──────────────────────────────────────────────────────
+djangorestframework==3.16.1
+djangorestframework_simplejwt==5.5.1
+PyJWT==2.11.0
 django-cors-headers==4.9.0
 django-filter
 drf-spectacular
-django-extensions==4.1
-django-material==1.12.0
-djangorestframework==3.16.1
-djangorestframework_simplejwt==5.5.1
-docx==0.2.4
-lxml==6.0.2
-mysql-connector-python==9.5.0
-packaging==25.0
-pillow==12.0.0
-psycopg2==2.9.11
+
+# ── Base de données ───────────────────────────────────────────────
 psycopg2-binary==2.9.11
-PyJWT==2.11.0
+dj-database-url==2.3.0
+
+# ── Serveur de production ─────────────────────────────────────────
+gunicorn==23.0.0
+whitenoise==6.9.0
+
+# ── Fichiers / Images ─────────────────────────────────────────────
+pillow==12.0.0
+
+# ── Configuration ─────────────────────────────────────────────────
 python-dotenv==1.2.1
-python-pptx==1.0.2
-six==1.17.0
-sqlparse==0.5.3
 typing_extensions==4.15.0
 tzdata==2025.2
-xlsxwriter==3.2.9
+packaging==25.0

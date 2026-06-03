@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -5,7 +6,9 @@ import 'package:shimmer/shimmer.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/service_provider.dart';
+import '../../services/api_service.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 import '../../widgets/home/hero_banner.dart';
 import '../../widgets/home/service_card.dart';
 import '../../widgets/common/glass_card.dart';
@@ -23,20 +26,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  String? _searchCategory;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      HomeContent(
-          onTabChange: (index) => setState(() => _currentIndex = index)),
-      const SearchScreen(),
-      const FavorisScreen(),
-      const ProfilScreen(),
-    ];
-  }
+  List<Widget> get _pages => [
+    HomeContent(
+      onTabChange: (index, {String? categorie}) => setState(() {
+        _currentIndex = index;
+        if (categorie != null) _searchCategory = categorie;
+      }),
+    ),
+    SearchScreen(key: ValueKey(_searchCategory), initialCategory: _searchCategory),
+    const FavorisScreen(),
+    const ProfilScreen(),
+  ];
 
   static const _navItems = [
     (Icons.home_filled,    Icons.home_outlined,     'Accueil'),
@@ -60,28 +62,37 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(_navItems.length, (i) {
-              final item   = _navItems[i];
-              final sel    = _currentIndex == i;
+              final item = _navItems[i];
+              final sel  = _currentIndex == i;
               return GestureDetector(
                 onTap: () => setState(() => _currentIndex = i),
                 behavior: HitTestBehavior.opaque,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  duration: const Duration(milliseconds: 280),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: sel
                       ? BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.secondary.withValues(alpha: 0.4),
+                          gradient: const LinearGradient(
+                            colors: [AppColors.secondary, AppColors.accent],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.secondary.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         )
                       : null,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         sel ? item.$1 : item.$2,
-                        color: sel ? AppColors.secondary : AppColors.textSecondary,
+                        color: sel ? Colors.white : context.secondaryText,
                         size: 22,
                       ),
                       if (sel) ...[
@@ -89,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           item.$3,
                           style: const TextStyle(
-                            color: AppColors.secondary,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -109,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // ── Contenu principal ──────────────────────────────────────────────────────
 class HomeContent extends StatefulWidget {
-  final Function(int) onTabChange;
+  final Function(int, {String? categorie}) onTabChange;
   const HomeContent({super.key, required this.onTabChange});
 
   @override
@@ -118,6 +129,10 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   final ScrollController _scrollController = ScrollController();
+  
+  // Tâche 7: Notifications
+  int _notifCount = 0;
+  List<dynamic> _notifications = [];
 
   static const _categories = [
     (Icons.hotel_outlined,           'Hôtels',      Color(0xFF1A8FDB), 'HEBERGEMENT'),
@@ -132,10 +147,15 @@ class _HomeContentState extends State<HomeContent> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.user == null && auth.isAuthenticated) {
+        auth.fetchProfile();
+      }
       final sp = context.read<ServiceProvider>();
       sp.fetchServices();
       sp.fetchTopRated();
       sp.fetchActivities();
+      _loadNotifications();
     });
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -151,6 +171,20 @@ class _HomeContentState extends State<HomeContent> {
     super.dispose();
   }
 
+  Future<void> _loadNotifications() async {
+    try {
+      final res = await ApiService.get('/notifications/');
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (!mounted) return;
+        setState(() {
+          _notifications = data is List ? data : (data['results'] ?? []);
+          _notifCount = _notifications.length;
+        });
+      }
+    } catch (_) {}
+  }
+
   void _showNotifications() {
     showModalBottomSheet(
       context: context,
@@ -158,9 +192,9 @@ class _HomeContentState extends State<HomeContent> {
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         height: MediaQuery.of(context).size.height * 0.6,
-        decoration: const BoxDecoration(
-          color: AppColors.backgroundMid,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        decoration: BoxDecoration(
+          color: context.midBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         ),
         child: Column(
           children: [
@@ -169,7 +203,7 @@ class _HomeContentState extends State<HomeContent> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.glassBorder,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -182,7 +216,7 @@ class _HomeContentState extends State<HomeContent> {
                       style: GoogleFonts.playfairDisplay(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary)),
+                          color: context.primaryText)),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -191,8 +225,8 @@ class _HomeContentState extends State<HomeContent> {
                       color: AppColors.secondary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text('0',
-                        style: TextStyle(
+                    child: Text('$_notifCount',
+                        style: const TextStyle(
                             color: AppColors.secondary,
                             fontWeight: FontWeight.bold)),
                   ),
@@ -201,27 +235,60 @@ class _HomeContentState extends State<HomeContent> {
             ),
             const SizedBox(height: 16),
             const Divider(color: AppColors.glassBorder, height: 1),
-            const Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.notifications_off_outlined,
-                        size: 64, color: AppColors.textSecondary),
-                    SizedBox(height: 16),
-                    Text('Aucune notification pour le moment',
-                        style: TextStyle(
-                            color: AppColors.textSecondary, fontSize: 16)),
-                    SizedBox(height: 8),
-                    Text(
-                      'Vous serez alerté des confirmations\nde réservation ici.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: AppColors.textHint, fontSize: 13),
+            Expanded(
+              child: _notifications.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.notifications_off_outlined,
+                              size: 64, color: context.secondaryText),
+                          const SizedBox(height: 16),
+                          Text('Aucune notification pour le moment',
+                              style: TextStyle(
+                                  color: context.secondaryText, fontSize: 16)),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Vous serez alerté des confirmations\nde réservation ici.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: context.hintText, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(24),
+                      itemCount: _notifications.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, i) {
+                        final n = _notifications[i];
+                        return GlassCard(
+                          borderRadius: 16,
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                                child: const Icon(Icons.info_outline, color: AppColors.secondary, size: 20),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(n['titre'] ?? 'Notification', style: TextStyle(color: context.primaryText, fontWeight: FontWeight.bold, fontSize: 14)),
+                                    const SizedBox(height: 4),
+                                    Text(n['message'] ?? '', style: TextStyle(color: context.secondaryText, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
@@ -232,11 +299,10 @@ class _HomeContentState extends State<HomeContent> {
   void _onCategoryTap(int index) {
     final cat = _categories[index];
     if (cat.$4 == null) {
-      // Événements ou Carte
       Navigator.pushNamed(
           context, index == 4 ? '/events' : '/explore-map');
     } else {
-      widget.onTabChange(1); // Bascule vers l'onglet recherche
+      widget.onTabChange(1, categorie: cat.$4);
     }
   }
 
@@ -275,8 +341,8 @@ class _HomeContentState extends State<HomeContent> {
                           children: [
                             Text(
                               '$greeting 👋',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
+                              style: TextStyle(
+                                color: context.secondaryText,
                                 fontSize: 14,
                               ),
                             ),
@@ -284,17 +350,42 @@ class _HomeContentState extends State<HomeContent> {
                             Text(
                               firstName,
                               style: GoogleFonts.playfairDisplay(
-                                color: AppColors.textPrimary,
+                                color: context.primaryText,
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Où allez-vous aujourd\'hui ?',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
+                            const SizedBox(height: 6),
+                            // Pill localisation
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(context, '/explore-map'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: AppColors.secondary
+                                          .withValues(alpha: 0.30)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.location_on_rounded,
+                                        color: AppColors.secondary, size: 12),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Lomé · Togo 🇹🇬',
+                                      style: TextStyle(
+                                        color: AppColors.secondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -310,20 +401,22 @@ class _HomeContentState extends State<HomeContent> {
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              const Icon(Icons.notifications_outlined,
-                                  color: AppColors.textPrimary, size: 24),
-                              Positioned(
-                                top: -4,
-                                right: -4,
-                                child: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.secondary,
-                                    shape: BoxShape.circle,
+                              Icon(Icons.notifications_outlined,
+                                  color: context.primaryText, size: 24),
+                              if (_notifCount > 0)
+                                Positioned(
+                                  top: -4,
+                                  right: -4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.secondary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                                    child: Text('$_notifCount', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -347,8 +440,8 @@ class _HomeContentState extends State<HomeContent> {
                           const SizedBox(width: 12),
                           Text(
                             'Hôtel, restaurant, activité...',
-                            style: const TextStyle(
-                              color: AppColors.textHint,
+                            style: TextStyle(
+                              color: context.hintText,
                               fontSize: 15,
                             ),
                           ),
@@ -381,32 +474,35 @@ class _HomeContentState extends State<HomeContent> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 52, // Ajusté légèrement pour tenir à 6 sur tous les écrans
-                                height: 52,
+                                width: 54,
+                                height: 54,
                                 decoration: BoxDecoration(
-                                  color: cat.$3.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: cat.$3.withValues(alpha: 0.35),
-                                    width: 1.2,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      cat.$3,
+                                      cat.$3.withValues(alpha: 0.55),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
+                                  shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: cat.$3.withValues(alpha: 0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    )
+                                      color: cat.$3.withValues(alpha: 0.30),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 6),
+                                    ),
                                   ],
                                 ),
-                                child: Icon(cat.$1, color: cat.$3, size: 24),
+                                child: Icon(cat.$1, color: Colors.white, size: 24),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 cat.$2,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
+                                style: TextStyle(
+                                  color: context.secondaryText,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -617,13 +713,17 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Accent doré
+        // Barre accent gradient
         Container(
           width: 4,
-          height: 20,
+          height: 22,
           margin: const EdgeInsets.only(right: 10),
           decoration: BoxDecoration(
-            color: AppColors.secondary,
+            gradient: const LinearGradient(
+              colors: [AppColors.secondary, AppColors.ocean],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -633,15 +733,15 @@ class _SectionTitle extends StatelessWidget {
             style: GoogleFonts.playfairDisplay(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.primaryText,
             ),
           ),
         ),
         GestureDetector(
           onTap: onTap,
-          child: Row(
+          child: const Row(
             children: [
-              const Text(
+              Text(
                 'Voir tout',
                 style: TextStyle(
                   color: AppColors.secondary,
@@ -649,8 +749,8 @@ class _SectionTitle extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_forward_ios,
+              SizedBox(width: 4),
+              Icon(Icons.arrow_forward_ios,
                   color: AppColors.secondary, size: 12),
             ],
           ),
@@ -698,11 +798,11 @@ class _ErrorWidget extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Icon(Icons.wifi_off,
-              size: 40, color: AppColors.textSecondary),
+          Icon(Icons.wifi_off,
+              size: 40, color: context.secondaryText),
           const SizedBox(height: 8),
           Text(message,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.secondaryText),
               textAlign: TextAlign.center),
           const SizedBox(height: 12),
           ElevatedButton.icon(
@@ -726,11 +826,11 @@ class _EmptyWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       child: Column(
         children: [
-          const Icon(Icons.search_off,
-              size: 40, color: AppColors.textSecondary),
+          Icon(Icons.search_off,
+              size: 40, color: context.secondaryText),
           const SizedBox(height: 8),
           Text(message,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.secondaryText),
               textAlign: TextAlign.center),
         ],
       ),

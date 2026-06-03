@@ -4,9 +4,13 @@ from . import views
 app_name = 'dashboard'
 
 urlpatterns = [
+    # Auth
+    path('login/', views.MayiLoginView.as_view(), name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('auto-login/', views.auto_login, name='auto_login'),
+
     # Main Dashboard
     path('', views.index, name='index'),
-    path('auto-login/', views.auto_login, name='auto_login'),
 
     # Users Management
     path('users/', views.user_list, name='user_list'),
@@ -20,9 +24,9 @@ urlpatterns = [
 
     # Reservations Management
     path('reservations/', views.reservation_list, name='reservation_list'),
+    path('reservations/export/', views.reservation_export_csv, name='reservation_export_csv'),
     path('reservations/<int:pk>/', views.reservation_detail, name='reservation_detail'),
     path('reservations/<int:pk>/status/', views.reservation_change_status, name='reservation_change_status'),
-    path('reservations/export/', views.reservation_export_csv, name='reservation_export_csv'),
 
     # Reviews Moderation
     path('reviews/', views.review_list, name='review_list'),

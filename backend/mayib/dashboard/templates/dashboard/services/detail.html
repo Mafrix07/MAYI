@@ -80,10 +80,12 @@
         </div>
         <hr>
         <h4 class="card-title">Actions rapides</h4>
-        <a href="{% url 'dashboard:service_toggle_status' service_obj.pk %}" class="btn btn-block {% if service_obj.est_actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+        <form method="post" action="{% url 'dashboard:service_toggle_status' service_obj.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-block {% if service_obj.est_actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
             {% if service_obj.est_actif %}Désactiver le service{% else %}Activer le service{% endif %}
-        </a>
-        <button class="btn btn-block btn-outline-warning mt-2">Signaler un problème</button>
+          </button>
+        </form>
       </div>
     </div>
     

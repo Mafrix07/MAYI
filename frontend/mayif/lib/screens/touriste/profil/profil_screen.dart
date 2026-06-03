@@ -1,16 +1,36 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/theme_provider.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/common/custom_button.dart';
 import '../../../widgets/common/custom_text_field.dart';
 import '../../../widgets/common/glass_card.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/theme_colors.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
+
+  @override
+  State<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends State<ProfilScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.user == null && auth.isAuthenticated) {
+        auth.fetchProfile();
+      }
+    });
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -19,7 +39,7 @@ class ProfilScreen extends StatelessWidget {
         backgroundColor: AppColors.backgroundCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?', style: TextStyle(color: AppColors.textSecondary)),
+        content: Text('Voulez-vous vraiment vous déconnecter ?', style: TextStyle(color: context.secondaryText)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -47,9 +67,9 @@ class ProfilScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        decoration: BoxDecoration(
+          color: context.midBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         ),
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
@@ -58,10 +78,10 @@ class ProfilScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.glassBorder, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 24),
-            Text('Modifier mon profil', 
-                style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text('Modifier mon profil',
+                style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold, color: context.primaryText)),
             const SizedBox(height: 24),
             CustomTextField(controller: firstNameController, label: 'Prénom', hint: 'Votre prénom', icon: Icons.person_outline),
             const SizedBox(height: 16),
@@ -87,77 +107,135 @@ class ProfilScreen extends StatelessWidget {
   }
 
   void _showNotifications(BuildContext context) {
+    List<dynamic> notifications = [];
+    bool isLoading = true;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        decoration: const BoxDecoration(
-          color: AppColors.backgroundMid,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          if (isLoading) {
+            ApiService.get('/notifications/').then((res) {
+              if (res.statusCode == 200) {
+                final data = jsonDecode(res.body);
+                if (context.mounted) {
+                  setSheetState(() {
+                    notifications = data is List ? data : (data['results'] ?? []);
+                    isLoading = false;
+                  });
+                }
+              }
+            }).catchError((_) {
+              if (context.mounted) setSheetState(() => isLoading = false);
+            });
+          }
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              color: context.midBackground,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Text('Notifications',
-                      style: GoogleFonts.playfairDisplay(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary)),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('0',
-                        style: TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold)),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBorder,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Divider(color: AppColors.glassBorder, height: 1),
-            const Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.notifications_off_outlined,
-                        size: 64, color: AppColors.textSecondary),
-                    SizedBox(height: 16),
-                    Text('Aucune notification pour le moment',
-                        style: TextStyle(
-                            color: AppColors.textSecondary, fontSize: 16)),
-                    SizedBox(height: 8),
-                    Text('Vous serez alerté des confirmations\nde réservation ici.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: AppColors.textHint, fontSize: 13)),
-                  ],
                 ),
-              ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Text('Notifications',
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: context.primaryText)),
+                      const Spacer(),
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text('${notifications.length}',
+                            style: const TextStyle(
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: AppColors.glassBorder, height: 1),
+                Expanded(
+                  child: isLoading 
+                    ? const Center(child: CircularProgressIndicator(color: AppColors.secondary))
+                    : notifications.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.notifications_off_outlined,
+                                    size: 64, color: context.secondaryText),
+                                const SizedBox(height: 16),
+                                Text('Aucune notification pour le moment',
+                                    style: TextStyle(
+                                        color: context.secondaryText, fontSize: 16)),
+                                const SizedBox(height: 8),
+                                Text('Vous serez alerté des confirmations\nde réservation ici.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: context.hintText, fontSize: 13)),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(24),
+                            itemCount: notifications.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 16),
+                            itemBuilder: (context, i) {
+                              final n = notifications[i];
+                              return GlassCard(
+                                borderRadius: 16,
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                                      child: const Icon(Icons.info_outline, color: AppColors.secondary, size: 20),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(n['titre'] ?? 'Notification', style: TextStyle(color: context.primaryText, fontWeight: FontWeight.bold, fontSize: 14)),
+                                          const SizedBox(height: 4),
+                                          Text(n['message'] ?? '', style: TextStyle(color: context.secondaryText, fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        }
       ),
     );
   }
@@ -183,9 +261,9 @@ class ProfilScreen extends StatelessWidget {
         maxChildSize: 0.92,
         minChildSize: 0.4,
         builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.backgroundMid,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          decoration: BoxDecoration(
+            color: context.midBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
           ),
           child: ListView(
             controller: controller,
@@ -196,7 +274,7 @@ class ProfilScreen extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: AppColors.glassBorder,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -206,27 +284,27 @@ class ProfilScreen extends StatelessWidget {
                   style: GoogleFonts.playfairDisplay(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+                      color: context.primaryText)),
               const SizedBox(height: 4),
-              const Text('Réponses aux questions fréquentes',
+              Text('Réponses aux questions fréquentes',
                   style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13)),
+                      color: context.secondaryText, fontSize: 13)),
               const SizedBox(height: 24),
               ...faqs.map((faq) => _FaqTile(question: faq.$1, answer: faq.$2)),
               const SizedBox(height: 24),
               const Divider(color: AppColors.glassBorder),
               const SizedBox(height: 16),
-              const Text('Contacter le support',
+              Text('Contacter le support',
                   style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.primaryText,
                       fontWeight: FontWeight.bold,
                       fontSize: 15)),
               const SizedBox(height: 12),
-              _ContactRow(
+              const _ContactRow(
                   icon: Icons.email_outlined,
                   label: 'support@mayitogo.com'),
               const SizedBox(height: 8),
-              _ContactRow(
+              const _ContactRow(
                   icon: Icons.phone_outlined,
                   label: '+228 90 00 00 00'),
             ],
@@ -262,11 +340,23 @@ class ProfilScreen extends StatelessWidget {
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: const Text('Profil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              title: Text('Profil', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
               centerTitle: true,
-              leading: Navigator.canPop(context) 
-                ? IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white), onPressed: () => Navigator.pop(context))
+              leading: Navigator.canPop(context)
+                ? IconButton(icon: Icon(Icons.arrow_back_ios_new, color: Theme.of(context).colorScheme.onSurface), onPressed: () => Navigator.pop(context))
                 : null,
+              actions: [
+                Consumer<ThemeProvider>(
+                  builder: (context, themeProvider, _) => IconButton(
+                    tooltip: themeProvider.isDark ? 'Mode clair' : 'Mode sombre',
+                    icon: Icon(
+                      themeProvider.isDark ? Icons.wb_sunny_outlined : Icons.nightlight_round,
+                      color: AppColors.secondary,
+                    ),
+                    onPressed: themeProvider.toggle,
+                  ),
+                ),
+              ],
             ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -280,7 +370,7 @@ class ProfilScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.secondary.withValues(alpha: 0.5), width: 3),
-                          boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 20, offset: const Offset(0, 10))],
+                          boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 20, offset: Offset(0, 10))],
                         ),
                         child: CircleAvatar(
                           radius: 65,
@@ -302,11 +392,11 @@ class ProfilScreen extends StatelessWidget {
                         right: 4,
                         child: GestureDetector(
                           onTap: () => _pickAndUploadImage(context, auth),
-                          child: GlassCard(
+                          child: const GlassCard(
                             borderRadius: 20,
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(8),
                             fillColor: AppColors.secondary,
-                            child: const Icon(Icons.camera_alt, color: AppColors.background, size: 20),
+                            child: Icon(Icons.camera_alt, color: AppColors.background, size: 20),
                           ),
                         ),
                       ),
@@ -314,13 +404,13 @@ class ProfilScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    '${user?.firstName ?? ''} ${user?.lastName ?? ''}', 
-                    style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
+                    '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                    style: GoogleFonts.playfairDisplay(color: context.primaryText, fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user?.email ?? '', 
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                    style: TextStyle(color: context.secondaryText, fontSize: 16),
                   ),
                   const SizedBox(height: 40),
 
@@ -356,7 +446,7 @@ class ProfilScreen extends StatelessWidget {
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          child: Divider(color: Colors.white10),
+                          child: Divider(color: AppColors.glassBorder),
                         ),
                         _buildMenuTile(
                           icon: Icons.logout_rounded,
@@ -396,9 +486,9 @@ class ProfilScreen extends StatelessWidget {
         ),
         child: Icon(icon, color: color ?? AppColors.secondary, size: 24),
       ),
-      title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-      subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white24),
+      title: Text(title, style: TextStyle(color: color ?? context.primaryText, fontWeight: FontWeight.bold, fontSize: 16)),
+      subtitle: Text(subtitle, style: TextStyle(color: context.secondaryText, fontSize: 12)),
+      trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.hintText),
     );
   }
 }
@@ -429,8 +519,8 @@ class _FaqTileState extends State<_FaqTile> {
           ListTile(
             onTap: () => setState(() => _expanded = !_expanded),
             title: Text(widget.question,
-                style: const TextStyle(
-                    color: AppColors.textPrimary,
+                style: TextStyle(
+                    color: context.primaryText,
                     fontWeight: FontWeight.w600,
                     fontSize: 14)),
             trailing: Icon(
@@ -442,8 +532,8 @@ class _FaqTileState extends State<_FaqTile> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(widget.answer,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary,
+                  style: TextStyle(
+                      color: context.secondaryText,
                       fontSize: 13,
                       height: 1.5)),
             ),
@@ -465,8 +555,8 @@ class _ContactRow extends StatelessWidget {
         Icon(icon, color: AppColors.secondary, size: 18),
         const SizedBox(width: 10),
         Text(label,
-            style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 14)),
+            style: TextStyle(
+                color: context.secondaryText, fontSize: 14)),
       ],
     );
   }

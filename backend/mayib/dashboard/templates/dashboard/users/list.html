@@ -71,9 +71,12 @@
                     <a href="{% url 'dashboard:user_detail' u.pk %}" class="btn btn-sm btn-outline-primary" title="Voir détails">
                       <i class="mdi mdi-eye"></i>
                     </a>
-                    <a href="{% url 'dashboard:user_toggle_status' u.pk %}" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if u.is_active %}Désactiver{% else %}Activer{% endif %}">
-                      <i class="mdi {% if u.is_active %}mdi-account-off{% else %}mdi-account-check{% endif %}"></i>
-                    </a>
+                    <form method="post" action="{% url 'dashboard:user_toggle_status' u.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if u.is_active %}Désactiver{% else %}Activer{% endif %}">
+                        <i class="mdi {% if u.is_active %}mdi-account-off{% else %}mdi-account-check{% endif %}"></i>
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>

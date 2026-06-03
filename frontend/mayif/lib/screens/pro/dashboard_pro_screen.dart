@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_colors.dart';
 import '../../services/reservation_service.dart';
 import '../../widgets/common/glass_card.dart';
 
@@ -59,10 +60,10 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
               title: Text('Espace Professionnel',
                   style: GoogleFonts.playfairDisplay(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+                      color: context.primaryText)),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.logout, color: AppColors.textSecondary),
+                  icon: Icon(Icons.logout, color: context.secondaryText),
                   onPressed: () async {
                     await auth.logout();
                     if (context.mounted) {
@@ -107,7 +108,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           Text(
                             '${user?.firstName ?? ''} ${user?.lastName ?? user?.username ?? ''} 👋',
                             style: GoogleFonts.playfairDisplay(
-                              color: AppColors.textPrimary,
+                              color: context.primaryText,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
@@ -115,8 +116,8 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'Établissement : ${user?.profilProfessionnel?['nom_etablissement'] ?? 'Non défini'}',
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 14),
+                            style: TextStyle(
+                                color: context.secondaryText, fontSize: 14),
                           ),
                         ],
                       ),
@@ -142,7 +143,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           style: GoogleFonts.playfairDisplay(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary)),
+                              color: context.primaryText)),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -179,7 +180,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           style: GoogleFonts.playfairDisplay(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary)),
+                              color: context.primaryText)),
                       const SizedBox(height: 16),
                       GridView.count(
                         crossAxisCount: 2,
@@ -266,16 +267,16 @@ class _StatTile extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary)),
+                  color: context.primaryText)),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                color: context.secondaryText,
                 fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
           ),
@@ -326,16 +327,16 @@ class _DashboardActionCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: AppColors.textPrimary),
+                      color: context.primaryText),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary,
+                  style: TextStyle(
+                      color: context.secondaryText,
                       fontSize: 11,
                       height: 1.2),
                 ),

@@ -41,6 +41,17 @@ class ReservationViewSet(viewsets.ModelViewSet):
             valeur_acompte=Decimal('10.0')
         )
 
+    @action(detail=True, methods=['post'])
+    def annuler(self, request, pk=None):
+        reservation = self.get_object()
+        if reservation.touriste != request.user:
+            raise PermissionDenied('Seul le touriste peut annuler sa réservation.')
+        if reservation.statut in ['TERMINEE', 'ANNULEE']:
+            return Response({'error': 'Cette réservation ne peut plus être annulée.'}, status=status.HTTP_400_BAD_REQUEST)
+        reservation.statut = 'ANNULEE'
+        reservation.save()
+        return Response({'message': 'Réservation annulée.'}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def confirmer_paiement(self, request, pk=None):
         reservation = self.get_object()

@@ -1,4 +1,338 @@
-/* Mayi Theme Reset */
+/* ================================================================
+   MAYI TOGO TOURISM — Dashboard Admin Theme
+   Surcharge du template Star Admin avec les couleurs Mayi
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+/* ── Variables ──────────────────────────────────────────────────── */
 :root {
-  /* Retour aux couleurs StarAdmin par défaut si besoin, ou vide */
+  --mayi-primary:       #006B3F;
+  --mayi-primary-dark:  #004d2d;
+  --mayi-primary-light: #1DB97A;
+  --mayi-gold:          #FFCD00;
+  --mayi-gold-dark:     #cc9f00;
+  --mayi-dark:          #071A0B;
+  --mayi-dark-mid:      #0F2D15;
+  --mayi-dark-card:     #122E17;
+}
+
+/* ── Typographie globale ────────────────────────────────────────── */
+body,
+.navbar,
+.sidebar,
+.card,
+.table,
+.form-control,
+.btn {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, .card-title {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+/* ── Navbar Brand (zone logo gauche) ────────────────────────────── */
+.navbar.default-layout .navbar-brand-wrapper {
+  background: var(--mayi-dark) !important;
+  border-right: 1px solid rgba(255, 205, 0, 0.15) !important;
+}
+
+.navbar-brand-wrapper .mayi-brand {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--mayi-gold);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.navbar-brand-wrapper .mayi-brand-sub {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 500;
+  color: rgba(255, 205, 0, 0.55);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-align: right;
+}
+
+.navbar-brand-wrapper .mayi-brand-mini {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--mayi-gold);
+  line-height: 1;
+}
+
+/* ── Navbar principale (zone droite) ────────────────────────────── */
+.navbar.default-layout .navbar-menu-wrapper {
+  background: #ffffff !important;
+  border-bottom: 2px solid rgba(0, 107, 63, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+/* Icône cloche */
+.navbar .count-indicator .count {
+  background: var(--mayi-gold) !important;
+  color: var(--mayi-dark) !important;
+  font-weight: 700;
+}
+
+.navbar .count-indicator i {
+  color: var(--mayi-primary) !important;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--mayi-dark) !important;
+  border-right: 1px solid rgba(255, 205, 0, 0.08) !important;
+}
+
+/* Profil dans sidebar */
+.sidebar .nav-item.nav-profile {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.sidebar .nav-item.nav-profile .text-wrapper .profile-name {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.sidebar .nav-item.nav-profile .text-wrapper .designation {
+  color: var(--mayi-gold) !important;
+  font-size: 0.75rem;
+}
+
+/* Catégories (séparateurs) */
+.sidebar .nav-item.nav-category {
+  color: rgba(255, 205, 0, 0.45) !important;
+  font-size: 0.65rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  padding: 16px 20px 6px !important;
+  font-weight: 600 !important;
+}
+
+/* Liens normaux */
+.sidebar .nav-item .nav-link .menu-title {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.85rem;
+}
+
+.sidebar .nav-item .nav-link .menu-icon {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 1.1rem;
+}
+
+/* Hover */
+.sidebar .nav-item .nav-link:hover {
+  background: rgba(0, 107, 63, 0.18) !important;
+}
+
+.sidebar .nav-item .nav-link:hover .menu-title {
+  color: var(--mayi-primary-light) !important;
+}
+
+.sidebar .nav-item .nav-link:hover .menu-icon {
+  color: var(--mayi-primary-light) !important;
+}
+
+/* Élément actif */
+.sidebar .nav-item.active > .nav-link {
+  background: rgba(255, 205, 0, 0.1) !important;
+  border-left: 3px solid var(--mayi-gold) !important;
+}
+
+.sidebar .nav-item.active > .nav-link .menu-title {
+  color: var(--mayi-gold) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar .nav-item.active > .nav-link .menu-icon {
+  color: var(--mayi-gold) !important;
+}
+
+/* ── KPI Cards ──────────────────────────────────────────────────── */
+.card {
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 107, 63, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+.card .card-title {
+  color: #2d3748 !important;
+  font-size: 1rem !important;
+  border-bottom: 2px solid rgba(0, 107, 63, 0.1);
+  padding-bottom: 10px;
+  margin-bottom: 16px !important;
+}
+
+.card-statistics .card-body .clearfix .float-left i.text-info {
+  color: var(--mayi-primary) !important;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--mayi-primary) !important;
+  border-color: var(--mayi-primary) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--mayi-primary-dark) !important;
+  border-color: var(--mayi-primary-dark) !important;
+}
+
+.btn-orange,
+.btn-warning {
+  background-color: var(--mayi-gold) !important;
+  border-color: var(--mayi-gold) !important;
+  color: var(--mayi-dark) !important;
+  font-weight: 600 !important;
+}
+
+.btn-orange:hover,
+.btn-warning:hover {
+  background-color: var(--mayi-gold-dark) !important;
+  border-color: var(--mayi-gold-dark) !important;
+}
+
+.btn-outline-primary {
+  color: var(--mayi-primary) !important;
+  border-color: var(--mayi-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--mayi-primary) !important;
+  color: #fff !important;
+}
+
+/* ── Badges ─────────────────────────────────────────────────────── */
+.badge-info {
+  background-color: var(--mayi-primary) !important;
+}
+
+.badge-success {
+  background-color: var(--mayi-primary-light) !important;
+}
+
+.badge-warning {
+  background-color: var(--mayi-gold) !important;
+  color: var(--mayi-dark) !important;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────── */
+.table thead th {
+  border-top: none;
+  border-bottom: 2px solid rgba(0, 107, 63, 0.15) !important;
+  color: var(--mayi-primary) !important;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600 !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 107, 63, 0.04) !important;
+}
+
+.table td {
+  vertical-align: middle !important;
+  font-size: 0.88rem;
+}
+
+/* ── Pagination ─────────────────────────────────────────────────── */
+.page-item.active .page-link {
+  background-color: var(--mayi-primary) !important;
+  border-color: var(--mayi-primary) !important;
+}
+
+.page-link {
+  color: var(--mayi-primary) !important;
+}
+
+.page-link:hover {
+  color: var(--mayi-primary-dark) !important;
+  background-color: rgba(0, 107, 63, 0.08) !important;
+}
+
+/* ── Form controls ──────────────────────────────────────────────── */
+.form-control:focus {
+  border-color: var(--mayi-primary) !important;
+  box-shadow: 0 0 0 0.15rem rgba(0, 107, 63, 0.18) !important;
+}
+
+/* ── Breadcrumb ─────────────────────────────────────────────────── */
+.breadcrumb-item a {
+  color: var(--mayi-primary) !important;
+  font-weight: 500;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d !important;
+}
+
+/* ── Alerts ─────────────────────────────────────────────────────── */
+.alert-success {
+  background-color: rgba(29, 185, 122, 0.12) !important;
+  border-color: var(--mayi-primary-light) !important;
+  color: var(--mayi-primary-dark) !important;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* ── Charts section title ───────────────────────────────────────── */
+.card-title {
+  position: relative;
+  padding-left: 12px !important;
+}
+
+.card-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 18px;
+  background: var(--mayi-gold);
+  border-radius: 2px;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer {
+  background: #f8f9fa !important;
+  border-top: 1px solid rgba(0, 107, 63, 0.1) !important;
+  font-size: 0.82rem;
+}
+
+/* ── Dropdown user menu ─────────────────────────────────────────── */
+.dropdown-menu .dropdown-header {
+  background: linear-gradient(135deg, var(--mayi-primary), var(--mayi-primary-light)) !important;
+  border-radius: 8px 8px 0 0;
+}
+
+.dropdown-menu .dropdown-header p {
+  color: #fff !important;
+}
+
+/* ── Scrollbar sidebar ──────────────────────────────────────────── */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 205, 0, 0.3);
+  border-radius: 2px;
 }

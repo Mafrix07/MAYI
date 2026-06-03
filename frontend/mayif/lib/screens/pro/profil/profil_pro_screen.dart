@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/theme_colors.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/common/custom_button.dart';
 import '../../../widgets/common/custom_text_field.dart';
+import '../../../widgets/common/glass_card.dart';
 
 class ProfilProScreen extends StatelessWidget {
   const ProfilProScreen({super.key});
@@ -12,16 +16,18 @@ class ProfilProScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Souhaitez-vous vous déconnecter de votre espace pro ?'),
+        backgroundColor: AppColors.backgroundCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
+        content: const Text('Souhaitez-vous vous déconnecter de votre espace pro ?', style: TextStyle(color: AppColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler', style: TextStyle(color: Colors.white70))),
           TextButton(
             onPressed: () {
               context.read<AuthProvider>().logout();
               Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
             },
-            child: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
+            child: const Text('Déconnexion', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -36,22 +42,26 @@ class ProfilProScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: context.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, left: 24, right: 24, top: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            const Text('Modifier infos pro', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 24),
+            Text('Modifier infos pro', style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold, color: context.primaryText)),
+            const SizedBox(height: 24),
             CustomTextField(controller: firstNameController, label: 'Prénom', hint: 'Prénom pro', icon: Icons.person_outline),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
             CustomTextField(controller: lastNameController, label: 'Nom', hint: 'Nom pro', icon: Icons.person_outline),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
             CustomTextField(controller: phoneController, label: 'Téléphone pro', hint: '+228...', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             CustomButton(
               text: 'Enregistrer les modifications',
               onPressed: () async {
@@ -63,7 +73,6 @@ class ProfilProScreen extends StatelessWidget {
                 if (success && context.mounted) Navigator.pop(context);
               },
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -77,69 +86,94 @@ class ProfilProScreen extends StatelessWidget {
         final user = auth.user;
         final initials = "${user?.firstName?[0] ?? ''}${user?.lastName?[0] ?? ''}".toUpperCase();
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Mon Profil Pro'),
-            backgroundColor: const Color(0xFF006B3F),
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF006B3F),
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-                  ),
-                  padding: const EdgeInsets.only(bottom: 30, left: 20, right: 20),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white24,
-                        child: ClipOval(
-                          child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
-                            ? CachedNetworkImage(
-                                imageUrl: user.photoUrl!,
-                                width: 100, height: 100, fit: BoxFit.cover,
-                                placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
-                                errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
-                              )
-                            : Text(initials, style: const TextStyle(fontSize: 30, color: Colors.white)),
+        return NatureBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: Text('Mon Profil Pro', style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, color: context.primaryText)),
+              backgroundColor: Colors.transparent,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              elevation: 0,
+              centerTitle: true,
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Avatar section
+                  Center(
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundColor: AppColors.backgroundCard,
+                          child: ClipOval(
+                            child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                              ? CachedNetworkImage(
+                                  imageUrl: user.photoUrl!,
+                                  width: 120, height: 120, fit: BoxFit.cover,
+                                  placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                                  errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                                )
+                              : Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 15),
-                      Text('${user?.firstName ?? ''} ${user?.lastName ?? ''}', 
-                          style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 5),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                        child: const Text('COMPTE PROFESSIONNEL', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: 0, right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
+                            child: const Icon(Icons.camera_alt, color: AppColors.background, size: 18),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
+                  const SizedBox(height: 20),
+                  Text('${user?.firstName ?? ''} ${user?.lastName ?? ''}', 
+                      style: GoogleFonts.playfairDisplay(color: context.primaryText, fontSize: 26, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3))),
+                    child: Text('COMPTE PROFESSIONNEL', style: TextStyle(color: context.primaryText, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // Stats row
+                  Row(
                     children: [
-                      _buildStatCard('Services', '5 actifs', Colors.orange),
-                      const SizedBox(width: 15),
-                      _buildStatCard('Réservations', '12 ce mois', Colors.blue),
+                      _buildStatCard(context, 'Services', '5 actifs', Icons.storefront_rounded),
+                      const SizedBox(width: 16),
+                      _buildStatCard(context, 'Réservations', '12 ce mois', Icons.calendar_today_rounded),
                     ],
                   ),
-                ),
-                _buildTile(icon: Icons.storefront, title: 'Mes services', onTap: () => Navigator.pushNamed(context, '/pro/mes-services')),
-                _buildTile(icon: Icons.calendar_month, title: 'Réservations reçues', onTap: () => Navigator.pushNamed(context, '/pro/reservations')),
-                _buildTile(icon: Icons.edit_note, title: 'Modifier mes informations', onTap: () => _showEditSheet(context, auth)),
-                _buildTile(icon: Icons.settings_outlined, title: 'Paramètres du compte', onTap: () {}),
-                const Divider(indent: 70),
-                _buildTile(icon: Icons.logout, title: 'Déconnexion pro', color: Colors.red, onTap: () => _showLogoutDialog(context)),
-                const SizedBox(height: 30),
-              ],
+                  
+                  const SizedBox(height: 32),
+
+                  // Menu
+                  GlassCard(
+                    borderRadius: 28,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      children: [
+                        _buildTile(context, icon: Icons.storefront, title: 'Mes services', onTap: () => Navigator.pushNamed(context, '/pro/mes-services')),
+                        _buildTile(context, icon: Icons.calendar_month, title: 'Réservations reçues', onTap: () => Navigator.pushNamed(context, '/pro/reservations')),
+                        _buildTile(context, icon: Icons.edit_note, title: 'Modifier mes informations', onTap: () => _showEditSheet(context, auth)),
+                        _buildTile(context, icon: Icons.settings_outlined, title: 'Paramètres', onTap: () {}),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Divider(color: Colors.white10),
+                        ),
+                        _buildTile(context, icon: Icons.logout, title: 'Déconnexion pro', color: Colors.redAccent, onTap: () => _showLogoutDialog(context)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 100),
+                ],
+              ),
             ),
           ),
         );
@@ -147,33 +181,35 @@ class ProfilProScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color) {
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
-        ),
+      child: GlassCard(
+        borderRadius: 20,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-            const SizedBox(height: 5),
-            Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+            Icon(icon, color: AppColors.secondary, size: 24),
+            const SizedBox(height: 12),
+            Text(title, style: TextStyle(color: context.secondaryText, fontSize: 12)),
+            const SizedBox(height: 4),
+            Text(value, style: TextStyle(color: context.primaryText, fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTile({required IconData icon, required String title, required VoidCallback onTap, Color? color}) {
+  Widget _buildTile(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap, Color? color}) {
     return ListTile(
-      leading: Icon(icon, color: color ?? const Color(0xFF006B3F)),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right, size: 20),
       onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: (color ?? AppColors.secondary).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: color ?? AppColors.secondary, size: 20),
+      ),
+      title: Text(title, style: TextStyle(color: color ?? context.primaryText, fontWeight: FontWeight.bold, fontSize: 15)),
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white24),
     );
   }
 }

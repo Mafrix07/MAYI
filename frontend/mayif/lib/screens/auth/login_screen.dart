@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../widgets/common/custom_button.dart';
@@ -54,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role == 'PROFESSIONNEL') {
         Navigator.pushReplacementNamed(context, '/dashboard-pro');
       } else if (role == 'STAFF' || role == 'ADMIN') {
-        // Obtenir un code usage unique (60s) pour éviter le JWT dans l'URL
         try {
           final codeResponse = await ApiService.post('/auth/dashboard-code/', {});
           if (codeResponse.statusCode == 200) {
@@ -78,6 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -91,16 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // ── 2. Overlay dégradé vert foncé ──────────────────────────
+          // ── 2. Overlay adaptatif selon le thème ─────────────────────
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF071A0B).withValues(alpha: 0.45),
-                  const Color(0xFF071A0B).withValues(alpha: 0.75),
-                  const Color(0xFF071A0B).withValues(alpha: 0.97),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.45 : 0.15),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.75 : 0.45),
+                  const Color(0xFF071A0B).withValues(alpha: isDark ? 0.97 : 0.80),
                 ],
                 stops: const [0.0, 0.45, 1.0],
               ),
@@ -130,13 +132,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
 
                     // Titre principal
-                    Text(
-                      'MAYI',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 3,
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          AppColors.sunsetOceanGradient.createShader(bounds),
+                      blendMode: BlendMode.srcIn,
+                      child: Text(
+                        'MAYI',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 42,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 3,
+                        ),
                       ),
                     )
                         .animate()
@@ -145,7 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 6),
 
-                    // Tagline en or
                     Text(
                       'L\'aventure vous attend 🚗',
                       style: GoogleFonts.poppins(
@@ -154,9 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.5,
                       ),
-                    )
-                        .animate()
-                        .fadeIn(delay: 400.ms, duration: 500.ms),
+                    ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
 
                     const SizedBox(height: 48),
 
@@ -190,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(
                           'Pas encore membre ? ',
                           style: GoogleFonts.poppins(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 14,
                           ),
                         ),
@@ -236,7 +240,6 @@ class _LogoWithGlow extends StatelessWidget {
         Stack(
           alignment: Alignment.center,
           children: [
-            // Lueur dorée prononcée
             Container(
               width: 145,
               height: 145,
@@ -251,7 +254,6 @@ class _LogoWithGlow extends StatelessWidget {
                 ],
               ),
             ),
-            // Cercle or semi-transparent — logo coupé en cercle à l'intérieur
             Container(
               width: 112,
               height: 112,
@@ -266,7 +268,6 @@ class _LogoWithGlow extends StatelessWidget {
                 child: Image.asset(
                   'assets/images/logo.png',
                   fit: BoxFit.cover,
-                  // Recadre vers le haut pour ne montrer que l'icône circulaire
                   alignment: const Alignment(0, -0.35),
                 ),
               ),
@@ -274,7 +275,6 @@ class _LogoWithGlow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        // "Togo Tourism" flottant sous le cercle — discret, doré
         Text(
           'Togo Tourism',
           style: GoogleFonts.playfairDisplay(
@@ -311,6 +311,16 @@ class _LoginCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? const Color(0xFF071A0B).withValues(alpha: 0.55)
+        : const Color(0xFFF5EFE8).withValues(alpha: 0.88);
+    final titleColor = isDark ? Colors.white : AppColors.lightTextPrimary;
+    final subtitleColor = isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.15)
+        : AppColors.lightGlassBorder;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
@@ -318,7 +328,7 @@ class _LoginCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: const Color(0xFF071A0B).withValues(alpha: 0.55),
+            color: cardBg,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: AppColors.secondary.withValues(alpha: 0.35),
@@ -328,11 +338,11 @@ class _LoginCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Titre de la card
+              // Titre
               Text(
                 'Connexion',
                 style: GoogleFonts.playfairDisplay(
-                  color: Colors.white,
+                  color: titleColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -341,14 +351,13 @@ class _LoginCard extends StatelessWidget {
               Text(
                 'Accédez à votre espace Mayi',
                 style: GoogleFonts.poppins(
-                  color: AppColors.textSecondary,
+                  color: subtitleColor,
                   fontSize: 13,
                 ),
               ),
 
               const SizedBox(height: 28),
 
-              // Champ email
               GlassField(
                 controller: emailController,
                 hint: 'Email ou nom d\'utilisateur',
@@ -358,7 +367,6 @@ class _LoginCard extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              // Champ mot de passe
               GlassField(
                 controller: passwordController,
                 hint: 'Mot de passe',
@@ -369,14 +377,13 @@ class _LoginCard extends StatelessWidget {
                     obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
+                    color: subtitleColor,
                     size: 20,
                   ),
                   onPressed: onTogglePassword,
                 ),
               ),
 
-              // Mot de passe oublié
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -399,36 +406,30 @@ class _LoginCard extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // Message d'erreur
               if (errorMessage != null)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.redAccent, size: 16),
+                      const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           errorMessage!,
-                          style: const TextStyle(
-                              color: Colors.redAccent, fontSize: 12),
+                          style: const TextStyle(color: Colors.redAccent, fontSize: 12),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-              // Bouton or
               CustomButton(
                 text: 'Se connecter',
                 onPressed: onLogin,
@@ -439,14 +440,9 @@ class _LoginCard extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Séparateur
               Row(
                 children: [
-                  Expanded(
-                    child: Divider(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        thickness: 1),
-                  ),
+                  Expanded(child: Divider(color: dividerColor, thickness: 1)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
@@ -458,11 +454,7 @@ class _LoginCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Divider(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        thickness: 1),
-                  ),
+                  Expanded(child: Divider(color: dividerColor, thickness: 1)),
                 ],
               ),
             ],
@@ -472,4 +464,3 @@ class _LoginCard extends StatelessWidget {
     );
   }
 }
-
