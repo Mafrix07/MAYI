@@ -1,0 +1,456 @@
+================================================================================
+     MAYI TOGO TOURISM — PRÉSENTATION COMPLÈTE + QUESTIONS/RÉPONSES JURY
+     PPE 301 | d'ALMEIDA Mario-Francisco | Année universitaire 2025-2026
+================================================================================
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            PARTIE 1 — PRÉSENTATION
+════════════════════════════════════════════════════════════════════════════════
+
+
+────────────────────────────────────────────────────────────────────────────────
+1. LE PROBLÈME QU'ON RÉSOUT
+────────────────────────────────────────────────────────────────────────────────
+
+Le Togo a un vrai potentiel touristique. Plages, forêts, artisanat, gastronomie,
+sites historiques — il y a de quoi attirer. Mais un voyageur qui arrive à Lomé
+ou à Kpalimé aujourd'hui n'a aucun outil centralisé pour trouver un hébergement,
+un restaurant, un guide ou une activité culturelle.
+
+Tout passe encore par le bouche-à-oreille, les groupes WhatsApp ou les conseils
+d'un ami. Les plateformes internationales comme Booking ou TripAdvisor ne couvrent
+que les grands établissements — le tissu local, les petits prestataires, les
+acteurs du tourisme de proximité sont totalement invisibles numériquement.
+
+Mayi répond à ce problème : une application mobile qui connecte les touristes
+aux prestataires locaux, de la découverte jusqu'à la réservation et au paiement.
+
+
+────────────────────────────────────────────────────────────────────────────────
+2. CE QUE FAIT L'APPLICATION
+────────────────────────────────────────────────────────────────────────────────
+
+L'application s'adresse à deux types d'utilisateurs.
+
+LE TOURISTE peut :
+  → Parcourir les services disponibles par catégorie (restaurants, hébergements,
+    activités, loisirs)
+  → Rechercher avec des filtres avancés (prix, type de service, note moyenne)
+  → Consulter la fiche détaillée d'un service, voir les photos, lire les avis
+  → Ajouter des services en favoris
+  → Effectuer une réservation en ligne
+  → Payer un acompte via T-Money ou Flooz directement depuis l'application
+  → Gérer son historique de réservations et son profil personnel
+
+LE PROFESSIONNEL peut :
+  → Créer et gérer ses services (titre, description, prix, photos)
+  → Recevoir les demandes de réservation et les accepter ou les refuser
+  → Consulter les avis laissés par ses clients
+  → Suivre son activité depuis un tableau de bord dédié
+
+
+────────────────────────────────────────────────────────────────────────────────
+3. STACK TECHNIQUE
+────────────────────────────────────────────────────────────────────────────────
+
+FRONTEND — Flutter
+  → Application cross-platform (Android / iOS depuis un seul code)
+  → Architecture Provider pour la gestion d'état globale
+  → Design Material 3, dark mode natif, animations fluides
+  → Stockage sécurisé des tokens avec flutter_secure_storage
+  → APK Android généré et disponible
+
+BACKEND — Django REST Framework
+  → API REST complète, documentée (Swagger / ReDoc via drf-spectacular)
+  → Authentification JWT (tokens signés, durée de vie limitée)
+  → Gestion des rôles : Touriste, Professionnel, Admin
+  → Filtres avancés avec django-filter
+  → Gestion des fichiers / photos avec Pillow
+  → Déployé sur Railway, base PostgreSQL, HTTPS forcé
+
+
+────────────────────────────────────────────────────────────────────────────────
+4. CONTEXTE DE RÉALISATION — UN POINT IMPORTANT
+────────────────────────────────────────────────────────────────────────────────
+
+Ce projet était prévu pour deux développeurs sur 702 heures.
+
+La répartition initiale était claire :
+  → Moi (Mario d'ALMEIDA) : backend Django — Modules 1 à 4
+  → Ma binôme (Paola KPAKPAVI-KPASCO) : frontend Flutter — Modules 5 à 7
+
+Paola n'a pas contribué au projet. Aucun commit, aucune livraison.
+
+J'ai donc absorbé les deux rôles seul. Ce document d'analyse de couverture du
+cahier des charges en atteste : l'intégralité du travail visible dans le dépôt
+a été réalisée par une seule personne.
+
+Ça a imposé des choix de priorisation. Certaines fonctionnalités n'ont pas pu
+être livrées — je vais être transparent là-dessus. Mais voici ce qui a été fait.
+
+
+────────────────────────────────────────────────────────────────────────────────
+5. CE QUI A ÉTÉ RÉALISÉ
+────────────────────────────────────────────────────────────────────────────────
+
+BACKEND — quasi-complet (~95%)
+
+C'était ma responsabilité initiale. Elle est couverte en quasi-totalité :
+
+  ✅ Authentification complète avec JWT, inscription, connexion, profil,
+     photo de profil, gestion des rôles
+  ✅ Catalogue de services (restaurants, hébergements, activités) avec
+     recherche textuelle, filtres avancés, tri par note ou par prix
+  ✅ Système de réservations avec statuts (EN_ATTENTE, CONFIRMEE, ANNULEE),
+     plusieurs types (table, hébergement, activité), dates et nombre de personnes
+  ✅ Système d'avis et de notations (étoiles + commentaire, un avis par
+     touriste/service, moyenne calculée automatiquement)
+  ✅ Calendrier d'événements touristiques avec filtres
+  ✅ Déploiement : Procfile, gunicorn, whitenoise, HTTPS forcé, prêt Railway
+
+Et deux fonctionnalités BONUS non prévues au cahier des charges initial,
+ajoutées pour enrichir le projet malgré le contexte :
+
+  🎁 Paiement mobile T-Money et Flooz avec vérification par capture d'écran
+     et validation côté professionnel
+  🎁 Dashboard administrateur web complet (Bootstrap) pour gérer les
+     utilisateurs et modérer le contenu
+
+
+FRONTEND FLUTTER — partiellement couvert
+
+C'était la responsabilité de Paola. Je l'ai pris en charge en parallèle du
+backend, avec le temps restant. Voici ce qui existe et fonctionne :
+
+  ✅ Authentification complète : inscription, connexion, onboarding 3 slides,
+     welcome screen, récupération de mot de passe
+  ✅ Navigation intelligente par rôle (Touriste → Home / Pro → Dashboard)
+  ✅ Espace touriste : accueil, recherche, détail service, avis, favoris,
+     réservations, formulaire de réservation, profil
+  ✅ Espace professionnel : dashboard 4 sections, gestion des services,
+     réservations reçues, avis clients, profil pro
+  ✅ Thème dark/light, Material 3, animations, shimmer loading
+  ✅ APK Android généré et disponible
+
+
+────────────────────────────────────────────────────────────────────────────────
+6. CE QUI N'A PAS PU ÊTRE LIVRÉ — ET POURQUOI
+────────────────────────────────────────────────────────────────────────────────
+
+  ❌ Géolocalisation / Carte Google Maps
+     → Tâche Paola, 30H prévues — non réalisée
+
+  ❌ Notifications push (Firebase FCM)
+     → Module 7 prévu pour le frontend — non réalisé
+
+  ❌ Interface paiement Flutter
+     → Le backend est 100% prêt, l'UI Flutter n'a pas pu être développée
+        faute de temps
+
+  ⚠  Filtres avancés entièrement connectés côté Flutter
+     → Backend complet, branchement UI partiel
+
+  ❌ Tests unitaires et d'intégration
+     → 86H prévues — déprioritisés pour couvrir les fonctionnalités métier
+
+  ❌ Comparateur de prix entre plateformes
+     → Nécessite des intégrations API tierces externes, hors scope réaliste
+
+
+────────────────────────────────────────────────────────────────────────────────
+7. LE BILAN CHIFFRÉ
+────────────────────────────────────────────────────────────────────────────────
+
+  Domaine                     | Heures prévues | Couverture
+  ----------------------------|----------------|------------------
+  Infrastructure & Config     | 48H            | ~100%
+  Modèles Django (BDD)        | 84H            | ~100%
+  Auth & Sécurité             | 74H            | ~100%
+  API REST                    | 108H           | ~95%
+  Flutter Setup & Auth        | 84H            | ~80%
+  Flutter Fonctionnalités     | 142H           | ~55%
+  Flutter UX Avancé           | 76H            | ~30%
+  Tests                       | 86H            | ~5%
+  Déploiement                 | inclus         | ~90%
+  ----------------------------|----------------|------------------
+  TOTAL                       | 702H / 2 pers. | ~70% — 1 personne
+
+
+────────────────────────────────────────────────────────────────────────────────
+8. CE QUE JE RETIENS
+────────────────────────────────────────────────────────────────────────────────
+
+702 heures prévues pour deux. Une seule paire de mains.
+
+Le backend est solide, documenté, déployé. Le frontend couvre les parcours
+principaux et fonctionne. Deux fonctionnalités bonus ont été ajoutées au-delà
+du cahier des charges.
+
+Ce projet m'a appris à prendre des décisions sous contrainte réelle : qu'est-ce
+qu'on livre, qu'est-ce qu'on coupe, et comment on l'assume. C'est peut-être la
+compétence la plus proche de ce que vivent les développeurs en entreprise.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                         PARTIE 2 — QUESTIONS / RÉPONSES JURY
+════════════════════════════════════════════════════════════════════════════════
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q1 — En quoi votre solution se différencie de Booking.com ou TripAdvisor ?
+────────────────────────────────────────────────────────────────────────────────
+
+Booking et TripAdvisor sont conçus pour des marchés internationaux avec une
+infrastructure bancaire et numérique établie. Mayi est conçu pour la réalité
+économique et sociale du Togo. Ce ne sont pas les mêmes cibles.
+
+Trois différences concrètes :
+
+1. LA COUVERTURE LOCALE
+   Allez chercher un petit restaurant à Kpalimé ou une auberge familiale à
+   Togoville sur Booking. Il n'y sera pas. Ces plateformes référencent les
+   établissements qui ont une carte bancaire, un contrat, une infrastructure
+   administrative. Le tissu local togolais est quasiment invisible sur ces
+   outils. Mayi donne une vitrine numérique à des prestataires qui n'en ont
+   aucune aujourd'hui.
+
+2. LE PAIEMENT ADAPTÉ AU CONTEXTE
+   Booking exige une carte bancaire internationale. Au Togo, le taux de
+   bancarisation est faible — en revanche, T-Money et Flooz sont partout,
+   jusque dans les villages. Mayi intègre ces modes de paiement nativement.
+   C'est un choix technique qui reflète une réalité de terrain que Booking
+   n'a pas à gérer.
+
+3. L'ACCESSIBILITÉ POUR LES PETITS PRESTATAIRES
+   Sur Booking, s'inscrire en tant qu'hôtelier demande un processus long et
+   une commission prélevée sur chaque réservation. Un guide indépendant ou
+   une auberge familiale ne peut pas y être référencé facilement. Sur Mayi,
+   un professionnel crée son profil et publie ses services depuis son téléphone
+   en quelques minutes. Zéro intermédiaire, zéro commission internationale.
+
+En résumé : Booking connecte le monde aux grandes destinations.
+Mayi connecte les Togolais et les visiteurs aux acteurs locaux que Booking
+ne voit pas et ne verra probablement jamais.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q2 — Comment vous protégez les données personnelles de vos utilisateurs ?
+────────────────────────────────────────────────────────────────────────────────
+
+Plusieurs niveaux de protection sont en place :
+
+1. LES MOTS DE PASSE
+   Ils ne sont jamais stockés en clair. Django utilise PBKDF2 par défaut :
+   le mot de passe est haché et salé avant d'être enregistré en base. Même
+   en cas d'accès direct à la base de données, les mots de passe sont
+   illisibles.
+
+2. L'AUTHENTIFICATION PAR TOKEN JWT
+   L'utilisateur ne retransmet jamais son mot de passe à chaque requête.
+   Après connexion, il reçoit un token signé avec une durée de vie limitée.
+   Côté Flutter, ce token est stocké dans flutter_secure_storage — le
+   trousseau sécurisé du système, pas dans une simple base de données locale.
+
+3. LES COMMUNICATIONS CHIFFRÉES
+   Le backend est déployé avec HTTPS forcé. Toutes les données échangées
+   entre l'application et le serveur transitent via TLS — illisibles
+   sur le réseau.
+
+4. LE PRINCIPE DU MOINDRE PRIVILÈGE
+   Chaque rôle n'accède qu'à ce qui le concerne. Un touriste ne peut pas
+   consulter les données d'un autre touriste. Un professionnel ne gère que
+   ses propres services et réservations. Les permissions sont vérifiées
+   côté backend sur chaque endpoint.
+
+5. LES DONNÉES SENSIBLES MINIMISÉES
+   On ne collecte que ce qui est nécessaire : email, nom, téléphone, rôle.
+   Pas de carte bancaire stockée — le paiement passe par capture d'écran
+   vérifiée manuellement, ce qui évite de manipuler des données financières.
+
+Ce qu'on n'a pas encore :
+   → Pas de politique de confidentialité formelle rédigée
+   → Pas d'endpoint "supprimer mon compte" exposé côté utilisateur
+   → Pas de chiffrement des données au repos en base de données
+   Ce sont des points à adresser avant un déploiement à grande échelle,
+   notamment pour une conformité RGPD si des citoyens européens utilisent
+   l'application.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q3 — Pourquoi Flutter et pas React Native ou une app native ?
+────────────────────────────────────────────────────────────────────────────────
+
+Trois raisons :
+
+1. UN SEUL CODE pour Android et iOS. Dans un projet solo avec des contraintes
+   de temps fortes, écrire deux fois le même code aurait été inenvisageable.
+
+2. LES PERFORMANCES. Flutter compile en code natif ARM — il n'y a pas de pont
+   JavaScript comme dans React Native. Les animations et les transitions sont
+   fluides même sur des appareils d'entrée de gamme, ce qui compte dans le
+   contexte togolais où les terminaux haut de gamme ne sont pas majoritaires.
+
+3. LA RICHESSE DE L'ÉCOSYSTÈME. Les packages dont j'avais besoin existaient
+   tous : flutter_secure_storage pour la sécurité, flutter_map pour la carte,
+   image_picker pour les photos, provider pour la gestion d'état. Rien à
+   réinventer.
+
+React Native aurait fonctionné aussi, mais Flutter m'était plus familier et
+le compromis performance / productivité était meilleur pour ce projet.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q4 — Pourquoi Django et pas Node.js ou une autre techno backend ?
+────────────────────────────────────────────────────────────────────────────────
+
+Django REST Framework offre un rapport fonctionnalité/temps de développement
+difficile à battre pour une API de ce type :
+
+  → Le système d'authentification, les permissions, les serializers, les
+    filtres — tout est fourni et testé en production par des millions de projets.
+  → drf-spectacular génère la documentation Swagger automatiquement.
+  → L'ORM Django réduit considérablement le risque d'erreurs SQL, notamment
+    les injections.
+  → L'admin Django intégrée m'a fourni une interface de gestion des données
+    gratuite dès le premier jour.
+
+Pour un projet solo avec un périmètre fonctionnel large, Django était le choix
+le plus pragmatique.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q5 — Comment vous assurez-vous que les prestataires sont fiables ?
+────────────────────────────────────────────────────────────────────────────────
+
+Plusieurs mécanismes sont en place :
+
+  → Le système d'avis : chaque touriste peut noter et commenter un service
+    après une réservation. Un prestataire avec de mauvais avis sera naturellement
+    dépriorisé dans les résultats.
+
+  → La validation manuelle des profils professionnels : un administrateur peut
+    activer ou suspendre un compte professionnel depuis le dashboard d'admin.
+
+  → La vérification des paiements : la preuve de paiement (capture d'écran)
+    est vérifiée par le professionnel avant confirmation de la réservation.
+    En cas de litige, un ticket support peut être ouvert.
+
+Ce n'est pas un système de certification parfait — on n'a pas les moyens
+d'Airbnb avec ses vérifications d'identité. Mais ces garde-fous constituent
+une première couche de confiance réaliste pour un MVP.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q6 — Comment ça passe à l'échelle si vous avez beaucoup d'utilisateurs ?
+────────────────────────────────────────────────────────────────────────────────
+
+L'architecture actuelle peut scaler de manière progressive :
+
+  → Le backend est sur Railway avec PostgreSQL. Railway permet d'augmenter
+    les ressources (RAM, CPU) sans changer l'architecture.
+
+  → La pagination est implémentée sur tous les endpoints de liste — on ne
+    renvoie jamais toutes les données d'un coup.
+
+  → Les images sont servies via whitenoise (statique) et pourraient être
+    migrées vers un CDN (ex: Cloudinary) sans toucher au code applicatif.
+
+  → Si la charge devenait très importante, on pourrait mettre en cache
+    les endpoints les plus consultés (Redis + django-cache-framework).
+
+Honnêtement, pour un MVP à l'échelle du Togo dans un premier temps, l'infra
+actuelle est largement suffisante.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q7 — Vous n'avez pas fait de tests — comment vous savez que ça marche ?
+────────────────────────────────────────────────────────────────────────────────
+
+C'est un point que j'assume complètement.
+
+86 heures de tests étaient prévues. Réparties entre les deux développeurs.
+Sans binôme, j'ai fait un choix : livrer des fonctionnalités qui marchent
+plutôt que des tests pour des fonctionnalités incomplètes.
+
+Ce que j'ai fait à la place :
+  → Des tests manuels systématiques via Postman sur chaque endpoint avant
+    intégration côté Flutter
+  → Des tests de bout en bout sur les parcours critiques (inscription,
+    réservation, paiement)
+  → Une collection Postman documentée avec les cas nominaux et quelques
+    cas d'erreur
+
+C'est insuffisant pour un projet en production. Dans une vraie équipe, les
+tests unitaires et d'intégration seraient non-négociables. Ici, c'était un
+arbitrage sous contrainte de temps et de ressources.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q8 — Qu'est-ce que vous auriez fait différemment si c'était à refaire ?
+────────────────────────────────────────────────────────────────────────────────
+
+Trois choses :
+
+1. SIGNALER L'ABSENCE DU BINÔME PLUS TÔT
+   J'ai attendu trop longtemps avant de formaliser la situation. Prévenir
+   l'encadreur dès les premières semaines sans contribution aurait permis
+   d'ajuster le périmètre officiellement plutôt que de faire des choix
+   silencieux.
+
+2. COMMENCER LE FLUTTER PLUS TÔT
+   J'ai terminé le backend en premier, ce qui était logique mais a compressé
+   le temps disponible pour le frontend. Avec du recul, un développement
+   plus parallèle — même imparfait — aurait donné un meilleur résultat final.
+
+3. TESTER AU FUR ET À MESURE
+   Écrire quelques tests simples pendant le développement plutôt que de tout
+   déprioritiser. Ça m'a coûté du temps de debug sur des régressions que des
+   tests auraient attrapées immédiatement.
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q9 — Quelle est la suite pour ce projet ?
+────────────────────────────────────────────────────────────────────────────────
+
+Si le projet devait continuer après la soutenance, les priorités seraient :
+
+  → Finaliser l'interface de paiement Flutter (backend déjà 100% prêt)
+  → Intégrer les notifications push avec Firebase FCM
+  → Ajouter la géolocalisation et la carte des services
+  → Écrire les tests unitaires et d'intégration
+  → Rédiger une politique de confidentialité formelle
+  → Soumettre l'APK sur le Google Play Store
+
+Commercialement, le modèle pourrait être :
+  → Freemium pour les professionnels (profil gratuit, fonctionnalités avancées
+    en abonnement)
+  → Commission légère sur les réservations confirmées
+  → Mise en avant payante dans les résultats de recherche
+
+
+────────────────────────────────────────────────────────────────────────────────
+Q10 — Qu'avez-vous appris de ce projet ?
+────────────────────────────────────────────────────────────────────────────────
+
+Techniquement, j'ai dû couvrir une surface que je n'aurais pas couverte seul
+dans des circonstances normales : backend complet, frontend Flutter, déploiement,
+sécurité, UX. Ça m'a forcé à sortir de ma zone de confort.
+
+Mais ce que je retiens surtout, c'est la gestion sous contrainte réelle.
+
+Dans le monde professionnel, les équipes sont rarement au complet, les délais
+ne bougent pas, et il faut quand même livrer quelque chose. Décider ce qu'on
+coupe, documenter pourquoi, et assumer les choix — c'est ça que ce projet m'a
+vraiment appris.
+
+702 heures prévues pour deux. Une seule paire de mains. ~70% du cahier des
+charges couvert, deux fonctionnalités bonus livrées, un APK disponible et
+un backend déployé.
+
+J'en suis satisfait compte tenu du contexte.
+
+
+================================================================================
+                               FIN DU DOCUMENT
+================================================================================
