@@ -5,21 +5,14 @@ from .models import Utilisateur, ProfilProfessionnel, ProfilTouriste
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        login = attrs.get('username', '')
+        login = attrs.get('username', '').strip()
         if '@' in login:
-            try:
-                # On utilise filter().first() pour éviter l erreur MultipleObjectsReturned
-                # s il y a des doublons d email en base
-                user = Utilisateur.objects.filter(email=login).first()
-                if user:
-                    attrs['username'] = user.username
-                else:
-                    raise serializers.ValidationError(
-                        {'email': 'Aucun compte trouvé avec cet email.'}
-                    )
-            except Exception:
+            user = Utilisateur.objects.filter(email__iexact=login).first()
+            if user:
+                attrs['username'] = user.username
+            else:
                 raise serializers.ValidationError(
-                    {'email': 'Erreur lors de la recherche du compte.'}
+                    {'detail': 'Identifiants incorrects. Vérifiez votre email et mot de passe.'}
                 )
         return super().validate(attrs)
 
