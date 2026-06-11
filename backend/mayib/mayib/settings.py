@@ -100,8 +100,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mayib.wsgi.application'
 
 # ── Base de données ───────────────────────────────────────────────────────────
-# Priorité 1 : DATABASE_URL (Railway, Render, Supabase)
-# Priorité 2 : variables individuelles DB_* (dev local)
+# Priorité 1 : DATABASE_URL (Render, Railway, Supabase)
+# Priorité 2 : variables individuelles DB_* (dev local PostgreSQL)
+# Priorité 3 : SQLite (dev local sans config)
 _database_url = os.getenv('DATABASE_URL')
 if _database_url:
     DATABASES = {
@@ -111,7 +112,7 @@ if _database_url:
             ssl_require=not DEBUG,
         )
     }
-else:
+elif os.getenv('DB_NAME'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -120,6 +121,13 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

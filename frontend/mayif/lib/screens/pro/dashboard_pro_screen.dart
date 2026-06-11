@@ -115,7 +115,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Établissement : ${user?.profilProfessionnel?['nom_etablissement'] ?? 'Non défini'}',
+                            'Établissement : ${user?.profilProfessionnel?['nom_entreprise'] ?? user?.profilProfessionnel?['nom_etablissement'] ?? 'Non renseigné'}',
                             style: TextStyle(
                                 color: context.secondaryText, fontSize: 14),
                           ),

@@ -71,8 +71,16 @@ class AuthProvider with ChangeNotifier {
           _errorMessage = "Réponse invalide (token manquant)";
         }
       } else {
-        final data = jsonDecode(response.body);
-        _errorMessage = data['detail'] ?? data['message'] ?? 'Erreur lors de la connexion (${response.statusCode})';
+        if (response.statusCode == 400 || response.statusCode == 401) {
+          _errorMessage = 'Identifiants incorrects. Vérifiez votre email et mot de passe.';
+        } else {
+          try {
+            final data = jsonDecode(response.body);
+            _errorMessage = data['detail'] ?? data['message'] ?? 'Erreur de connexion (${response.statusCode})';
+          } catch (_) {
+            _errorMessage = 'Erreur de connexion (${response.statusCode})';
+          }
+        }
       }
     } catch (e) {
       _errorMessage = "Erreur réseau ou serveur : $e";
