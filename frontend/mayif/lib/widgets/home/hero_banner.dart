@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/service.dart';
+import '../../screens/services/service_detail_screen.dart';
 
 class HeroBanner extends StatefulWidget {
   /// Services réels passés depuis HomeContent (top-rated).
@@ -81,7 +82,14 @@ class _HeroBannerState extends State<HeroBanner> {
               final imageUrl = service.imagePrincipale ??
                   (service.photos.isNotEmpty ? service.photos.first : null);
 
-              return Stack(
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ServiceDetailScreen(service: service),
+                  ),
+                ),
+                child: Stack(
                 fit: StackFit.expand,
                 children: [
                   // ── Image du service ────────────────────────────────
@@ -179,6 +187,7 @@ class _HeroBannerState extends State<HeroBanner> {
                     ),
                   ),
                 ],
+                ),
               );
             },
           ),

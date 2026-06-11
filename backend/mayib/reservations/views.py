@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Reservation, PaiementAcompte
 from .serializers import ReservationSerializer
 from users.permissions import IsTouriste, IsSupportOrAdmin
+from core.models import Notification
 
 class ReservationViewSet(viewsets.ModelViewSet):
     serializer_class = ReservationSerializer
@@ -78,13 +79,45 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
-        allowed_fields = {'statut'}
+        allowed_fields = {'statut', 'date_debut', 'date_fin'}
         provided_fields = set(request.data.keys())
         if not provided_fields.issubset(allowed_fields):
-            raise PermissionDenied('Seul le champ statut peut être modifié.')
+            raise PermissionDenied('Modification non autorisée.')
         is_touriste_owner = (instance.touriste == request.user)
         is_pro_owner = (instance.service.professionnel.utilisateur == request.user)
         is_staff = request.user.role in ['ADMIN', 'SUPPORT']
         if not (is_touriste_owner or is_pro_owner or is_staff):
             raise PermissionDenied('Permission refusée.')
-        return super().partial_update(request, *args, **kwargs)
+
+        nouveau_statut = request.data.get('statut')
+        ancien_statut = instance.statut
+        response = super().partial_update(request, *args, **kwargs)
+
+        if nouveau_statut and nouveau_statut != ancien_statut:
+            self._notifier_touriste(instance, nouveau_statut)
+
+        return response
+
+    def _notifier_touriste(self, reservation, nouveau_statut):
+        messages = {
+            'CONFIRMEE': (
+                'Réservation confirmée ✅',
+                f'Votre réservation pour "{reservation.service.titre}" a été confirmée par le professionnel.',
+            ),
+            'ANNULEE': (
+                'Réservation annulée',
+                f'Votre réservation pour "{reservation.service.titre}" a été annulée.',
+            ),
+            'ACOMPTE_EN_VERIFICATION': (
+                'Paiement en cours de vérification',
+                f'Votre acompte pour "{reservation.service.titre}" est en cours de vérification.',
+            ),
+        }
+        if nouveau_statut in messages:
+            titre, message = messages[nouveau_statut]
+            Notification.objects.create(
+                destinataire=reservation.touriste,
+                type_notification='RESERVATION',
+                titre=titre,
+                message=message,
+            )
