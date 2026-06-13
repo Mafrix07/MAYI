@@ -50,13 +50,14 @@ class ApiService {
 
   // ── POST ──────────────────────────────────────────────────────────────────
   static Future<http.Response> post(
-      String endpoint, Map<String, dynamic> data) async {
+      String endpoint, Map<String, dynamic> data,
+      {bool handleUnauthorized = true}) async {
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: await _headers(),
       body: jsonEncode(data),
     );
-    return _handleResponse(response);
+    return handleUnauthorized ? _handleResponse(response) : response;
   }
 
   // ── PATCH ─────────────────────────────────────────────────────────────────

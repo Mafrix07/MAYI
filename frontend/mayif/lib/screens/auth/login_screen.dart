@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 
 import '../../providers/auth_provider.dart';
-import '../../services/api_service.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/glass_field.dart';
 import 'register_screen.dart';
@@ -54,18 +51,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final role = auth.role;
       if (role == 'PROFESSIONNEL') {
         Navigator.pushReplacementNamed(context, '/dashboard-pro');
-      } else if (role == 'STAFF' || role == 'ADMIN') {
-        try {
-          final codeResponse = await ApiService.post('/auth/dashboard-code/', {});
-          if (codeResponse.statusCode == 200) {
-            final data = jsonDecode(codeResponse.body);
-            final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-            final url = Uri.parse('$baseUrl/dashboard/auto-login/?code=${data['code']}');
-            if (await canLaunchUrl(url)) {
-              await launchUrl(url, mode: LaunchMode.externalApplication);
-            }
-          }
-        } catch (_) {}
+      } else if (role == 'SUPPORT' || role == 'ADMIN') {
+        Navigator.pushReplacementNamed(context, '/admin');
       } else {
         Navigator.pushReplacementNamed(context, '/home');
       }

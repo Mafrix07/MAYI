@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/theme_colors.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/avis_provider.dart';
 import '../../../models/avis.dart';
 import '../../../widgets/common/glass_card.dart';
@@ -20,7 +21,10 @@ class _MesAvisProScreenState extends State<MesAvisProScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AvisProvider>().fetchAvis(0);
+      final profilId = context.read<AuthProvider>().user?.profilProfessionnel?['id'] as int?;
+      if (profilId != null) {
+        context.read<AvisProvider>().fetchAvisForPro(profilId);
+      }
     });
   }
 

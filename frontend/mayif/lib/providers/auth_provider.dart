@@ -54,7 +54,7 @@ class AuthProvider with ChangeNotifier {
       final response = await ApiService.post('/auth/login/', {
           'username': username,
           'password': password,
-      });
+      }, handleUnauthorized: false);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
