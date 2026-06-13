@@ -22,6 +22,7 @@ import 'screens/pro/avis/mes_avis_screen.dart';
 import 'screens/pro/profil/profil_pro_screen.dart';
 import 'screens/touriste/reservations/mes_reservations_screen.dart';
 import 'screens/touriste/profil/profil_screen.dart';
+import 'screens/admin/admin_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/welcome_screen.dart';
@@ -74,7 +75,7 @@ class MayiTogoApp extends StatelessWidget {
         '/favoris':              (context) => const FavorisScreen(),
         '/events':               (context) => const EventListScreen(),
         '/dashboard-pro':        (context) => const DashboardProScreen(),
-        '/admin':                (context) => const HomeScreen(), // temporaire
+        '/admin':                (context) => const AdminScreen(),
         // Touriste
         '/reservations':         (context) => const MesReservationsScreen(),
         // Pro — Semaine 3
@@ -92,6 +93,9 @@ class MayiTogoApp extends StatelessWidget {
             switch (auth.role) {
               case 'PROFESSIONNEL':
                 return const DashboardProScreen();
+              case 'ADMIN':
+              case 'SUPPORT':
+                return const AdminScreen();
               default:
                 return const HomeScreen();
             }

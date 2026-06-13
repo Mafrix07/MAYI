@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_colors.dart';
 import '../../services/reservation_service.dart';
@@ -62,6 +63,16 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                       fontWeight: FontWeight.bold,
                       color: context.primaryText)),
               actions: [
+                Consumer<ThemeProvider>(
+                  builder: (context, themeProvider, _) => IconButton(
+                    tooltip: themeProvider.isDark ? 'Mode clair' : 'Mode sombre',
+                    icon: Icon(
+                      themeProvider.isDark ? Icons.wb_sunny_outlined : Icons.nightlight_round,
+                      color: AppColors.secondary,
+                    ),
+                    onPressed: themeProvider.toggle,
+                  ),
+                ),
                 IconButton(
                   icon: Icon(Icons.logout, color: context.secondaryText),
                   onPressed: () async {
@@ -115,7 +126,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Établissement : ${user?.profilProfessionnel?['nom_entreprise'] ?? user?.profilProfessionnel?['nom_etablissement'] ?? 'Non renseigné'}',
+                            'Établissement : ${(() { final n = (user?.profilProfessionnel?['nom_entreprise'] as String?)?.trim(); return (n != null && n.isNotEmpty) ? n : 'Non renseigné'; })()}',
                             style: TextStyle(
                                 color: context.secondaryText, fontSize: 14),
                           ),

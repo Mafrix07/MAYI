@@ -83,6 +83,7 @@ class _HeroBannerState extends State<HeroBanner> {
                   (service.photos.isNotEmpty ? service.photos.first : null);
 
               return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

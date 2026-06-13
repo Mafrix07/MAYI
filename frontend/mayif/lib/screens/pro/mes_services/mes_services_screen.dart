@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,25 +40,16 @@ class _MesServicesScreenState extends State<MesServicesScreen> {
     final profilId = auth.user?.profilProfessionnel?['id'];
 
     try {
-      final response = await ApiService.get('/services/');
+      final endpoint = profilId != null
+          ? '/services/?professionnel=$profilId'
+          : '/services/';
+      final response = await ApiService.get(endpoint);
       if (!mounted) return;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'] as List<dynamic>;
-        final all = results.map((e) => Service.fromJson(e)).toList();
-
-        final mes = profilId != null
-            ? all.where((s) {
-                final raw = results.firstWhere(
-                  (e) => e['id'] == s.id,
-                  orElse: () => <String, dynamic>{},
-                );
-                return raw['professionnel']?['id'] == profilId;
-              }).toList()
-            : all;
-
         setState(() {
-          _services = mes;
+          _services = results.map((e) => Service.fromJson(e)).toList();
           _isLoading = false;
         });
       } else {
@@ -268,14 +261,12 @@ class _ServiceFormScreenState extends State<_ServiceFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _isLoading = true; _error = null; });
 
-    final profilId = context.read<AuthProvider>().user?.profilProfessionnel?['id'];
     final body = <String, dynamic>{
       'nom': _nomCtrl.text.trim(),
       'description': _descCtrl.text.trim(),
       'type_service': _typeService,
       'prix': _prixCtrl.text.trim(),
       'adresse': _adresseCtrl.text.trim(),
-      if (widget.service == null && profilId != null) 'professionnel_id': profilId,
     };
 
     try {
@@ -356,9 +347,14 @@ class _ServiceFormScreenState extends State<_ServiceFormScreen> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: _photoFile != null ? AppColors.secondary : AppColors.glassBorder),
                     ),
-                    child: _photoFile == null 
+                    child: _photoFile == null
                       ? Icon(Icons.add_a_photo_outlined, color: context.hintText, size: 40)
-                      : ClipRRect(borderRadius: BorderRadius.circular(15), child: Image.network(_photoFile!.path, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.check, color: AppColors.secondary))),
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: kIsWeb
+                            ? Image.network(_photoFile!.path, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.check, color: AppColors.secondary))
+                            : Image.file(File(_photoFile!.path), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.check, color: AppColors.secondary)),
+                        ),
                   ),
                 ),
                 if (_error != null) Padding(padding: const EdgeInsets.only(top: 20), child: Text(_error!, style: const TextStyle(color: Colors.redAccent))),

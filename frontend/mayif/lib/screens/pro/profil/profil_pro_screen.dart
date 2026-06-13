@@ -1,16 +1,66 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/theme_provider.dart';
+import '../../../services/api_service.dart';
+import '../../../services/reservation_service.dart';
 import '../../../widgets/common/custom_button.dart';
 import '../../../widgets/common/custom_text_field.dart';
 import '../../../widgets/common/glass_card.dart';
 
-class ProfilProScreen extends StatelessWidget {
+class ProfilProScreen extends StatefulWidget {
   const ProfilProScreen({super.key});
+
+  @override
+  State<ProfilProScreen> createState() => _ProfilProScreenState();
+}
+
+class _ProfilProScreenState extends State<ProfilProScreen> {
+  int _nbServices = 0;
+  int _nbReservationsMois = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStats());
+  }
+
+  Future<void> _loadStats() async {
+    final auth = context.read<AuthProvider>();
+    final profilId = auth.user?.profilProfessionnel?['id'];
+    try {
+      final servicesRes = await ApiService.get(
+          profilId != null ? '/services/?professionnel=$profilId' : '/services/');
+      int nbServices = 0;
+      if (servicesRes.statusCode == 200) {
+        final data = jsonDecode(servicesRes.body);
+        final results = data is Map ? (data['results'] as List?) ?? [] : data as List;
+        nbServices = results.length;
+      }
+
+      final reservations = await ReservationService.getReservationsRecues();
+      final now = DateTime.now();
+      final nbMois = reservations.where((r) {
+        final dateStr = r['date_creation'] as String?;
+        if (dateStr == null) return false;
+        final date = DateTime.tryParse(dateStr);
+        return date != null && date.year == now.year && date.month == now.month;
+      }).length;
+
+      if (mounted) {
+        setState(() {
+          _nbServices = nbServices;
+          _nbReservationsMois = nbMois;
+        });
+      }
+    } catch (_) {}
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -18,10 +68,10 @@ class ProfilProScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.backgroundCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
-        content: const Text('Souhaitez-vous vous déconnecter de votre espace pro ?', style: TextStyle(color: AppColors.textSecondary)),
+        title: Text('Déconnexion', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text('Souhaitez-vous vous déconnecter de votre espace pro ?', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler', style: TextStyle(color: Colors.white70))),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Annuler', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)))),
           TextButton(
             onPressed: () {
               context.read<AuthProvider>().logout();
@@ -52,7 +102,7 @@ class ProfilProScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: context.hintText, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 24),
             Text('Modifier infos pro', style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold, color: context.primaryText)),
             const SizedBox(height: 24),
@@ -96,83 +146,102 @@ class ProfilProScreen extends StatelessWidget {
               elevation: 0,
               centerTitle: true,
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  // Avatar section
-                  Center(
-                    child: Stack(
+            body: RefreshIndicator(
+              color: AppColors.secondary,
+              backgroundColor: AppColors.backgroundCard,
+              onRefresh: _loadStats,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    // Avatar section
+                    Center(
+                      child: GestureDetector(
+                        onTap: () async {
+                          final xFile = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+                          if (xFile != null) await auth.uploadProfilePhoto(xFile);
+                        },
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 60,
+                              backgroundColor: AppColors.backgroundCard,
+                              child: ClipOval(
+                                child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: user.photoUrl!,
+                                      width: 120, height: 120, fit: BoxFit.cover,
+                                      placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                                      errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                                    )
+                                  : Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0, right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
+                                child: const Icon(Icons.camera_alt, color: AppColors.background, size: 18),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text('${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                        style: GoogleFonts.playfairDisplay(color: context.primaryText, fontSize: 26, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3))),
+                      child: Text('COMPTE PROFESSIONNEL', style: TextStyle(color: context.primaryText, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Stats row
+                    Row(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: AppColors.backgroundCard,
-                          child: ClipOval(
-                            child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: user.photoUrl!,
-                                  width: 120, height: 120, fit: BoxFit.cover,
-                                  placeholder: (context, url) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
-                                  errorWidget: (context, url, error) => Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
-                                )
-                              : Text(initials, style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0, right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: AppColors.background, size: 18),
-                          ),
-                        ),
+                        _buildStatCard(context, 'Services', '$_nbServices actif${_nbServices > 1 ? 's' : ''}', Icons.storefront_rounded),
+                        const SizedBox(width: 16),
+                        _buildStatCard(context, 'Réservations', '$_nbReservationsMois ce mois', Icons.calendar_today_rounded),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('${user?.firstName ?? ''} ${user?.lastName ?? ''}', 
-                      style: GoogleFonts.playfairDisplay(color: context.primaryText, fontSize: 26, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3))),
-                    child: Text('COMPTE PROFESSIONNEL', style: TextStyle(color: context.primaryText, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                  ),
-                  
-                  const SizedBox(height: 32),
 
-                  // Stats row
-                  Row(
-                    children: [
-                      _buildStatCard(context, 'Services', '5 actifs', Icons.storefront_rounded),
-                      const SizedBox(width: 16),
-                      _buildStatCard(context, 'Réservations', '12 ce mois', Icons.calendar_today_rounded),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  // Menu
-                  GlassCard(
-                    borderRadius: 28,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Column(
-                      children: [
-                        _buildTile(context, icon: Icons.storefront, title: 'Mes services', onTap: () => Navigator.pushNamed(context, '/pro/mes-services')),
-                        _buildTile(context, icon: Icons.calendar_month, title: 'Réservations reçues', onTap: () => Navigator.pushNamed(context, '/pro/reservations')),
-                        _buildTile(context, icon: Icons.edit_note, title: 'Modifier mes informations', onTap: () => _showEditSheet(context, auth)),
-                        _buildTile(context, icon: Icons.settings_outlined, title: 'Paramètres', onTap: () {}),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          child: Divider(color: Colors.white10),
-                        ),
-                        _buildTile(context, icon: Icons.logout, title: 'Déconnexion pro', color: Colors.redAccent, onTap: () => _showLogoutDialog(context)),
-                      ],
+                    // Menu
+                    GlassCard(
+                      borderRadius: 28,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        children: [
+                          _buildTile(context, icon: Icons.storefront, title: 'Mes services', onTap: () => Navigator.pushNamed(context, '/pro/mes-services')),
+                          _buildTile(context, icon: Icons.calendar_month, title: 'Réservations reçues', onTap: () => Navigator.pushNamed(context, '/pro/reservations')),
+                          _buildTile(context, icon: Icons.edit_note, title: 'Modifier mes informations', onTap: () => _showEditSheet(context, auth)),
+                          Consumer<ThemeProvider>(
+                            builder: (context, themeProvider, _) => _buildTile(
+                              context,
+                              icon: themeProvider.isDark ? Icons.wb_sunny_outlined : Icons.nightlight_round,
+                              title: themeProvider.isDark ? 'Passer en mode clair' : 'Passer en mode sombre',
+                              onTap: themeProvider.toggle,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            child: Divider(color: context.hintText.withValues(alpha: 0.3)),
+                          ),
+                          _buildTile(context, icon: Icons.logout, title: 'Déconnexion pro', color: Colors.redAccent, onTap: () => _showLogoutDialog(context)),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 100),
-                ],
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
           ),
@@ -209,7 +278,7 @@ class ProfilProScreen extends StatelessWidget {
         child: Icon(icon, color: color ?? AppColors.secondary, size: 20),
       ),
       title: Text(title, style: TextStyle(color: color ?? context.primaryText, fontWeight: FontWeight.bold, fontSize: 15)),
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white24),
+      trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.hintText),
     );
   }
 }

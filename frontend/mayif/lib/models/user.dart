@@ -50,5 +50,5 @@ class User {
       'role': role,
     };
   }
-  String? get photoUrl => profilTouriste?['photo'] ?? profilProfessionnel?['photo'];
+  String? get photoUrl => (photoProfil != null && photoProfil!.isNotEmpty) ? photoProfil : null;
 }

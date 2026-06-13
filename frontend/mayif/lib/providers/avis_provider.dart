@@ -14,6 +14,29 @@ class AvisProvider with ChangeNotifier {
   bool get dejaPoste => _dejaPoste;
   String? get errorMessage => _errorMessage;
 
+  // ── Récupérer tous les avis reçus par un Pro ─────────────────────────────
+  Future<void> fetchAvisForPro(int profilProId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _avis = [];
+    notifyListeners();
+    try {
+      final response = await ApiService.get('/reviews/?professionnel_id=$profilProId');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data is List ? data : (data['results'] as List<dynamic>);
+        _avis = results.map((e) => Avis.fromJson(e)).toList();
+      } else {
+        _errorMessage = 'Erreur lors du chargement des avis';
+      }
+    } catch (e) {
+      _errorMessage = 'Erreur réseau';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // ── Récupérer les avis d'un service ───────────────────────────────────────
   Future<void> fetchAvis(int serviceId) async {
     _isLoading = true;
