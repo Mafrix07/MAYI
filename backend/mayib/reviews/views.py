@@ -5,7 +5,9 @@
 # NE PAS MODIFIER : reviews/serializers.py
 # ============================================================
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .models import Avis
 from .serializers import AvisSerializer
 from users.permissions import IsTouriste
@@ -31,12 +33,11 @@ class AvisViewSet(viewsets.ModelViewSet):
 
 
     def get_queryset(self):
-        """
-        Récupère tous les avis avec les informations liées du touriste et du service.
-        """
-        return Avis.objects.all().select_related(
-            'touriste', 'service'
-        ).order_by('-date_creation')
+        qs = Avis.objects.all().select_related('touriste', 'service').order_by('-date_creation')
+        professionnel_id = self.request.query_params.get('professionnel_id')
+        if professionnel_id:
+            qs = qs.filter(service__professionnel_id=professionnel_id)
+        return qs
 
     def get_authenticators(self):
         if getattr(self, 'action', None) in ['list', 'retrieve']:
@@ -58,7 +59,42 @@ class AvisViewSet(viewsets.ModelViewSet):
         """
         serializer.save(touriste=self.request.user)
 
-# Résumé de fin de phase :
-# ✓ Créé : AvisViewSet, IsOwnerAvis
-# ✓ Importé depuis l'existant : Avis, AvisSerializer, IsTouriste
-# ✓ Reste à faire : Phase 5 (core/views.py)
+class AdminReviewsListView(APIView):
+    """Liste tous les avis (avec est_signale) — réservé ADMIN/SUPPORT."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        signale_only = request.query_params.get('signale') == 'true'
+        qs = Avis.objects.all().select_related('touriste', 'service').order_by('-est_signale', '-date_creation')
+        if signale_only:
+            qs = qs.filter(est_signale=True)
+        data = [
+            {
+                'id': a.id,
+                'auteur': a.touriste.username,
+                'service_nom': a.service.nom,
+                'note': a.note,
+                'commentaire': a.commentaire,
+                'est_signale': a.est_signale,
+                'date_creation': a.date_creation.isoformat(),
+            }
+            for a in qs
+        ]
+        return Response(data)
+
+
+class AdminReviewDeleteView(APIView):
+    """Supprime n'importe quel avis — réservé ADMIN/SUPPORT."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            avis = Avis.objects.get(pk=pk)
+        except Avis.DoesNotExist:
+            return Response({'error': 'Introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        avis.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

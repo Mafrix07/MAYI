@@ -57,6 +57,19 @@ class ServiceViewSet(viewsets.ModelViewSet):
         )
 
 
+class AdminServiceToggleView(APIView):
+    """Active/désactive un service — réservé ADMIN/SUPPORT."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        service = get_object_or_404(Service, pk=pk)
+        service.est_actif = not service.est_actif
+        service.save()
+        return Response({'id': service.id, 'est_actif': service.est_actif})
+
+
 class PhotoServiceUploadView(APIView):
     """POST /services/{id}/photos/ — Ajoute une photo à un service."""
     permission_classes = [permissions.IsAuthenticated]

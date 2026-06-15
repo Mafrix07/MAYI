@@ -2,6 +2,7 @@
 
 import secrets
 from django.core.cache import cache
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -93,3 +94,76 @@ class DashboardCodeView(APIView):
         code = secrets.token_urlsafe(32)
         cache.set(f'dashboard_code_{code}', request.user.pk, timeout=60)
         return Response({'code': code})
+
+
+class AdminStatsView(APIView):
+    """KPIs pour l'AdminScreen Flutter — réservé ADMIN et SUPPORT."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+
+        from services.models import Service
+        from reservations.models import Reservation
+        from reviews.models import Avis
+
+        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        return Response({
+            'total_users': self.__class__._count_users(),
+            'total_services': Service.objects.filter(est_actif=True).count(),
+            'reservations_ce_mois': Reservation.objects.filter(date_creation__gte=month_start).count(),
+            'avis_signales': Avis.objects.filter(est_signale=True).count(),
+            'services_signales': Service.objects.filter(est_signale=True).count(),
+        })
+
+    @staticmethod
+    def _count_users():
+        from .models import Utilisateur
+        return Utilisateur.objects.count()
+
+
+class AdminUsersListView(APIView):
+    """Liste tous les utilisateurs — réservé ADMIN/SUPPORT."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        from .models import Utilisateur
+        role = request.query_params.get('role')
+        qs = Utilisateur.objects.all().order_by('-date_creation')
+        if role:
+            qs = qs.filter(role=role)
+        data = [
+            {
+                'id': u.id,
+                'username': u.username,
+                'email': u.email,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'role': u.role,
+                'is_active': u.is_active,
+                'date_creation': u.date_creation.isoformat(),
+            }
+            for u in qs
+        ]
+        return Response(data)
+
+
+class AdminUserToggleView(APIView):
+    """Active/désactive un utilisateur — réservé ADMIN/SUPPORT."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        if request.user.role not in ['ADMIN', 'SUPPORT']:
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+        from .models import Utilisateur
+        try:
+            user_obj = Utilisateur.objects.get(pk=pk)
+        except Utilisateur.DoesNotExist:
+            return Response({'error': 'Introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        user_obj.is_active = not user_obj.is_active
+        user_obj.save()
+        return Response({'id': user_obj.id, 'is_active': user_obj.is_active})

@@ -82,15 +82,7 @@ class _HeroBannerState extends State<HeroBanner> {
               final imageUrl = service.imagePrincipale ??
                   (service.photos.isNotEmpty ? service.photos.first : null);
 
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ServiceDetailScreen(service: service),
-                  ),
-                ),
-                child: Stack(
+              return Stack(
                 fit: StackFit.expand,
                 children: [
                   // ── Image du service ────────────────────────────────
@@ -188,9 +180,26 @@ class _HeroBannerState extends State<HeroBanner> {
                     ),
                   ),
                 ],
-                ),
               );
             },
+          ),
+
+          // ── Overlay tap transparent — intercepte le tap sans bloquer le swipe
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (_currentPage < _slides.length) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ServiceDetailScreen(service: _slides[_currentPage]),
+                    ),
+                  );
+                }
+              },
+            ),
           ),
 
           // ── Indicateurs de page ──────────────────────────────────────

@@ -13,7 +13,8 @@ class ServiceSerializer(serializers.ModelSerializer):
     professionnel_id = serializers.PrimaryKeyRelatedField(
         queryset=ProfilProfessionnel.objects.all(),
         source='professionnel',
-        write_only=True
+        write_only=True,
+        required=False,
     )
     note_moyenne = serializers.FloatField(source='api_note_moyenne', read_only=True)
     photos = PhotoServiceSerializer(many=True, read_only=True)
@@ -26,7 +27,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             'id', 'nom', 'description', 'type_service', 'prix', 'adresse',
             'latitude', 'longitude', 'horaire_ouverture', 'horaire_fermeture',
             'professionnel', 'professionnel_id', 'note_moyenne', 'photos',
-            'photo_principale', 'date_creation'
+            'photo_principale', 'est_actif', 'date_creation'
         ]
 
     def get_photo_principale(self, obj):

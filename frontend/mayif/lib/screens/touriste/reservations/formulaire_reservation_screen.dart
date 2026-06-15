@@ -80,7 +80,8 @@ class _FormulaireReservationScreenState
       setState(() {
         if (isDebut) {
           _dateDebut = picked;
-          if (_dateFin != null && _dateFin!.isBefore(_dateDebut!)) {
+          // Clear dateFin if not strictly after dateDebut (backend rejects same day)
+          if (_dateFin != null && !_dateFin!.isAfter(_dateDebut!)) {
             _dateFin = null;
           }
         } else {
@@ -96,6 +97,10 @@ class _FormulaireReservationScreenState
       setState(() => _errorMessage = 'Veuillez sélectionner une date de début');
       return;
     }
+    if (_dateFin != null && !_dateFin!.isAfter(_dateDebut!)) {
+      setState(() => _errorMessage = 'La date de fin doit être après la date de début');
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -103,35 +108,31 @@ class _FormulaireReservationScreenState
     });
 
     try {
-      final reservationId = await ReservationService.create({
+      final result = await ReservationService.createWithError({
         'service': widget.serviceId,
         'date_debut': DateFormat('yyyy-MM-dd').format(_dateDebut!),
         if (_dateFin != null)
           'date_fin': DateFormat('yyyy-MM-dd').format(_dateFin!),
         'nombre_personnes': _nombrePersonnes,
-        if (_heureArrivee != null)
-          'heure_arrivee':
-              '${_heureArrivee!.hour.toString().padLeft(2, '0')}:${_heureArrivee!.minute.toString().padLeft(2, '0')}:00',
       });
 
       setState(() => _isLoading = false);
 
       if (!mounted) return;
 
-      if (reservationId != null) {
+      if (result['id'] != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => PaiementScreen(
-              reservationId: reservationId,
-              montantAcompte: widget.montantAcompte,
+              reservationId: result['id'] as int,
+              montantAcompte: (result['montantAcompte'] as double?) ?? widget.montantAcompte,
               serviceTitre: widget.serviceTitre,
             ),
           ),
         );
       } else {
-        setState(
-            () => _errorMessage = 'Erreur lors de la réservation. Réessayez.');
+        setState(() => _errorMessage = result['error'] as String? ?? 'Erreur lors de la réservation. Réessayez.');
       }
     } catch (e) {
       setState(() {

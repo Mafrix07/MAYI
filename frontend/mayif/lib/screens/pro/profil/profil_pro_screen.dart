@@ -160,8 +160,17 @@ class _ProfilProScreenState extends State<ProfilProScreen> {
                     Center(
                       child: GestureDetector(
                         onTap: () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           final xFile = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
-                          if (xFile != null) await auth.uploadProfilePhoto(xFile);
+                          if (xFile == null) return;
+                          final ok = await auth.uploadProfilePhoto(xFile);
+                          if (!mounted) return;
+                          messenger.showSnackBar(SnackBar(
+                            content: Text(ok ? 'Photo mise à jour !' : 'Erreur upload, réessayez.'),
+                            backgroundColor: ok ? AppColors.secondary : Colors.redAccent,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ));
                         },
                         child: Stack(
                           children: [

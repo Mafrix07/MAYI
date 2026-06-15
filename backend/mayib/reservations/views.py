@@ -102,15 +102,15 @@ class ReservationViewSet(viewsets.ModelViewSet):
         messages = {
             'CONFIRMEE': (
                 'Réservation confirmée ✅',
-                f'Votre réservation pour "{reservation.service.titre}" a été confirmée par le professionnel.',
+                f'Votre réservation pour "{reservation.service.nom}" a été confirmée par le professionnel.',
             ),
             'ANNULEE': (
                 'Réservation annulée',
-                f'Votre réservation pour "{reservation.service.titre}" a été annulée.',
+                f'Votre réservation pour "{reservation.service.nom}" a été annulée.',
             ),
             'ACOMPTE_EN_VERIFICATION': (
                 'Paiement en cours de vérification',
-                f'Votre acompte pour "{reservation.service.titre}" est en cours de vérification.',
+                f'Votre acompte pour "{reservation.service.nom}" est en cours de vérification.',
             ),
         }
         if nouveau_statut in messages:
