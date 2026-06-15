@@ -7,11 +7,33 @@ class ReservationService {
   // ── Créer une réservation → retourne l'ID ────────────────────────────────
   static Future<int?> create(Map<String, dynamic> data) async {
     final response = await ApiService.post('/reservations/', data);
-    
     if (response.statusCode == 201) {
       return jsonDecode(response.body)['id'];
     }
     return null;
+  }
+
+  // ── Créer une réservation → retourne {id, montantAcompte} ou {error: "message"} ─
+  static Future<Map<String, dynamic>> createWithError(Map<String, dynamic> data) async {
+    final response = await ApiService.post('/reservations/', data);
+    if (response.statusCode == 201) {
+      final body = jsonDecode(response.body);
+      return {
+        'id': body['id'] as int,
+        'montantAcompte': double.tryParse(body['montant_acompte']?.toString() ?? '') ?? 0.0,
+      };
+    }
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map) {
+        final firstVal = body[body.keys.first];
+        if (firstVal is List && firstVal.isNotEmpty) {
+          return {'error': firstVal.first.toString()};
+        }
+        return {'error': body.toString()};
+      }
+    } catch (_) {}
+    return {'error': 'Erreur ${response.statusCode}. Réessayez.'};
   }
 
   // ── Lister mes réservations ───────────────────────────────────────────────

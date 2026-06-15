@@ -44,9 +44,11 @@ class ServiceFilter(django_filters.FilterSet):
         label='Note minimale (1-5)'
     )
 
+    professionnel = django_filters.NumberFilter(field_name='professionnel__id')
+
     class Meta:
         model = Service
-        fields = ['type_service', 'localisation', 'prix_min', 'prix_max', 'note_min']
+        fields = ['type_service', 'localisation', 'prix_min', 'prix_max', 'note_min', 'professionnel']
 
     def filter_note_min(self, queryset, name, value):
         """

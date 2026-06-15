@@ -91,7 +91,8 @@ class ApiService {
       request.headers['Authorization'] = 'Bearer $token';
     }
 
-    if (kIsWeb && bytes != null) {
+    if (bytes != null) {
+      // Prefer bytes — works on all platforms including Android content:// URIs
       request.files.add(http.MultipartFile.fromBytes(
         fieldName,
         bytes,

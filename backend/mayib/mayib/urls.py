@@ -17,7 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from users.views import MyTokenObtainPairView, InscriptionView, MonProfilView, ProfilePhotoView, DashboardCodeView
+from users.views import MyTokenObtainPairView, InscriptionView, MonProfilView, ProfilePhotoView, DashboardCodeView, AdminStatsView, AdminUsersListView, AdminUserToggleView
+from services.views import AdminServiceToggleView
+from reviews.views import AdminReviewsListView, AdminReviewDeleteView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -35,6 +37,12 @@ urlpatterns = [
     path('api/auth/me/',       MonProfilView.as_view(),         name='mon_profil'),
     path('api/auth/me/photo/',       ProfilePhotoView.as_view(),   name='utilisateur-photo'),
     path('api/auth/dashboard-code/', DashboardCodeView.as_view(), name='dashboard-code'),
+    path('api/admin/stats/',                    AdminStatsView.as_view(),       name='admin-stats'),
+    path('api/admin/users/',                    AdminUsersListView.as_view(),    name='admin-users'),
+    path('api/admin/users/<int:pk>/toggle/',    AdminUserToggleView.as_view(),   name='admin-user-toggle'),
+    path('api/admin/services/<int:pk>/toggle/', AdminServiceToggleView.as_view(), name='admin-service-toggle'),
+    path('api/admin/reviews/',                  AdminReviewsListView.as_view(),  name='admin-reviews'),
+    path('api/admin/reviews/<int:pk>/',         AdminReviewDeleteView.as_view(), name='admin-review-delete'),
 
     # Apps
     path('api/', include('services.urls')),
@@ -49,5 +57,5 @@ urlpatterns = [
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Servir les fichiers media en dev ET en prod (Render n'a pas de CDN configuré)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
