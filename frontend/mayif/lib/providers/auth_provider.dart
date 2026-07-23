@@ -123,27 +123,31 @@ class AuthProvider with ChangeNotifier {
     return false;
   }
 
+  String? _uploadError;
+  String? get uploadError => _uploadError;
+
   Future<bool> uploadProfilePhoto(XFile xFile) async {
     _isLoading = true;
+    _uploadError = null;
     notifyListeners();
     try {
       final bytes = await xFile.readAsBytes();
       final response = await ApiService.uploadFile(
         '/auth/me/photo/',
         'photo_profil',
-        filePath: kIsWeb ? null : xFile.path,
         bytes: bytes,
         fileName: xFile.name,
       );
-      
-      if (response.statusCode == 200) {
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         await fetchProfile();
         _isLoading = false;
         notifyListeners();
         return true;
       }
+      _uploadError = 'Erreur ${response.statusCode} : ${response.body}';
     } catch (e) {
-      // Log silencieux
+      _uploadError = e.toString();
     }
     _isLoading = false;
     notifyListeners();

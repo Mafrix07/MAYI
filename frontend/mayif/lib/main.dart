@@ -26,6 +26,7 @@ import 'screens/admin/admin_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/welcome_screen.dart';
+import 'screens/chatbot/chatbot_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -83,6 +84,7 @@ class MayiTogoApp extends StatelessWidget {
         '/pro/reservations':     (context) => const ReservationsRecuesScreen(),
         '/pro/avis':             (context) => const MesAvisProScreen(),
         '/pro/profil':           (context) => const ProfilProScreen(),
+        '/chatbot':              (context) => const ChatbotScreen(),
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {

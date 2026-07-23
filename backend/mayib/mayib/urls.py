@@ -44,6 +44,9 @@ urlpatterns = [
     path('api/admin/reviews/',                  AdminReviewsListView.as_view(),  name='admin-reviews'),
     path('api/admin/reviews/<int:pk>/',         AdminReviewDeleteView.as_view(), name='admin-review-delete'),
 
+    # Chatbot IA
+    path('api/', include('chatbot.urls')),
+
     # Apps
     path('api/', include('services.urls')),
     path('api/', include('reservations.urls')),
