@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'reservations',
     'users',
     'api',
+    'chatbot',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',   # ← requis par BLACKLIST_AFTER_ROTATION

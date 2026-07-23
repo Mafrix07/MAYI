@@ -3,434 +3,349 @@
 <head>
   <meta charset="UTF-8" />
   <title>Kakemono — Mayi Togo Tourism</title>
-
-  <!-- ✏️ Toute la configuration est dans config.js — ne modifiez que ce fichier -->
   <script src="config.js"></script>
-
-  <!-- ╔══════════════════════════════════════════════════════════════╗
-       ║  🎨  COULEURS — variables CSS modifiables                   ║
-       ╚══════════════════════════════════════════════════════════════╝ -->
-  <style>
-  :root {
-    --c-primary:    #006a44;
-    --c-accent:     #4dca8a;
-    --c-gold:       #ffcb00;
-    --c-red:        #d21034;
-    --c-bg:         #071510;
-    --c-bg-mid:     #0a1e12;
-    --c-card:       rgba(255,255,255,0.04);
-    --c-border:     rgba(255,255,255,0.09);
-    --c-text:       #ffffff;
-    --c-muted:      rgba(255,255,255,0.50);
-  }
-  </style>
-
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     @page { size: 80cm 200cm; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    body { width: 100vw; height: 100vh; overflow: hidden; background: #111; }
 
-    body {
-      width:100vw; height:100vh;
-      overflow:hidden; background:#0a0a0a;
-    }
-
-    /* ── Wrapper plein écran ─────────────────────── */
     #outer {
-      position:fixed; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      background: radial-gradient(ellipse at 50% 30%, #1e1e1e 0%, #0a0a0a 100%);
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #1a1a1a;
     }
 
-    /* ── Kakemono 800×2000 mis à l'échelle ──────── */
     #kk-scale {
-      width:800px; height:2000px; flex-shrink:0;
-      transform-origin:center center;
-      font-family:'Inter',sans-serif; color:var(--c-text);
-      position:relative; overflow:hidden;
+      width: 800px; height: 2000px; flex-shrink: 0;
+      transform-origin: center center;
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      position: relative; overflow: hidden;
     }
 
-    /* ── Fond décoratif ─────────────────────────── */
-    .bg-layer {
-      position:absolute; inset:0; z-index:0;
-      background:
-        radial-gradient(ellipse 130% 45% at 50%   0%, #0d3320 0%, transparent 68%),
-        radial-gradient(ellipse 70%  28% at 85%  52%, #1a4a2a 0%, transparent 58%),
-        radial-gradient(ellipse 55%  22% at 15%  78%, #0e2e1a 0%, transparent 58%),
-        linear-gradient(175deg, var(--c-bg) 0%, var(--c-bg-mid) 38%, #060f18 68%, #03080d 100%);
-    }
-    .dots {
-      position:absolute; inset:0; z-index:0;
-      background-image:radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
-      background-size:26px 26px;
-    }
-    .deco { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,.05); z-index:0; }
-    .tg-stripe { position:absolute; width:100%; height:5px; z-index:1; }
-
-    /* ── Conteneur flex vertical ─────────────────── */
-    .kk { position:relative; z-index:2; width:100%; height:100%; display:flex; flex-direction:column; }
-
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════
        1 — HEADER
-    ════════════════════════════════════════════ */
+    ══════════════════════════════════════════ */
     .header {
-      background:rgba(255,255,255,.97);
-      padding:18px 32px;
-      display:flex; align-items:center; gap:16px;
-      border-bottom:5px solid var(--c-primary);
-      flex-shrink:0;
+      background: #ffffff;
+      height: 88px;
+      padding: 0 36px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 4px solid var(--c-primary, #006a44);
+      flex-shrink: 0;
     }
-    #img-ecole { height:68px; width:auto; object-fit:contain; flex-shrink:0; }
-    .h-text { flex:1; }
-    .h-school { font-size:19px; font-weight:700; color:#1a3a5c; line-height:1.2; }
-    .h-sub    { font-size:12px; color:#4a6080; margin-top:3px; font-weight:500; }
-    .h-badge  { background:var(--c-primary); color:#fff; font-size:11px; font-weight:700; padding:6px 14px; border-radius:20px; white-space:nowrap; }
+    .hdr-left { display: flex; align-items: center; gap: 16px; }
+    .jpope-word {
+      font-size: 46px; font-weight: 900; letter-spacing: -1.5px;
+      color: var(--c-primary, #006a44); line-height: 1;
+    }
+    .hdr-sep { width: 3px; height: 52px; background: var(--c-primary, #006a44); border-radius: 2px; opacity: .6; }
+    .hdr-titles { line-height: 1.35; }
+    .hdr-titles .t1 { font-size: 15px; font-weight: 800; color: #111; }
+    .hdr-titles .t2 { font-size: 13px; font-weight: 500; color: #555; }
+    .hdr-right img { height: 60px; width: auto; object-fit: contain; }
 
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════
        2 — HERO
-    ════════════════════════════════════════════ */
-    .hero { padding:55px 48px 40px; text-align:center; flex-shrink:0; }
-    .hero-row { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:14px; }
-    .app-logo-box {
-      width:56px; height:56px; border-radius:14px; overflow:hidden; flex-shrink:0;
-      border:2px solid rgba(77,202,138,.35);
-      box-shadow:0 0 18px rgba(77,202,138,.22);
-      background:linear-gradient(135deg, var(--c-primary), var(--c-accent));
-      display:flex; align-items:center; justify-content:center; font-size:26px;
+    ══════════════════════════════════════════ */
+    .hero {
+      background: var(--hero-bg);
+      position: relative; overflow: hidden;
+      padding: 44px 40px 0;
+      min-height: 740px;
+      display: flex; flex-direction: column; align-items: center;
     }
-    .app-logo-box img { width:100%; height:100%; object-fit:cover; display:block; }
-    .eyebrow {
-      display:inline-flex; align-items:center; gap:8px;
-      background:rgba(0,106,68,.22); border:1px solid rgba(0,106,68,.5);
-      border-radius:20px; padding:5px 16px;
-      font-size:10px; font-weight:600; color:var(--c-accent);
-      letter-spacing:2px; text-transform:uppercase;
+    /* subtle dot grid */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 28px 28px;
     }
-    .dot { width:6px; height:6px; border-radius:50%; background:var(--c-accent); animation:pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+    /* Togo flag stripe */
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 5px; z-index: 3;
+      background: linear-gradient(90deg, #006a44 33%, #ffcb00 33% 66%, #d21034 66%);
+    }
+
+    .hero-inner { position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+    .hero-top { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+    .hero-logo-box {
+      width: 66px; height: 66px; border-radius: 18px; overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.35);
+      box-shadow: 0 6px 24px rgba(0,0,0,.3);
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center; font-size: 28px;
+    }
+    .hero-logo-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 22px; padding: 7px 20px;
+      font-size: 11px; font-weight: 700; color: #fff;
+      letter-spacing: 1.8px; text-transform: uppercase;
+    }
 
     .app-name {
-      font-family:'Playfair Display',serif;
-      font-size:80px; font-weight:900; line-height:1; letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#a8e6c1 50%,var(--c-accent) 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-      margin-bottom:6px;
+      font-size: 96px; font-weight: 900; color: #fff;
+      letter-spacing: -3px; line-height: 1;
+      text-shadow: 0 4px 28px rgba(0,0,0,.35);
     }
-    .app-sub { font-size:16px; color:var(--c-muted); margin-bottom:18px; }
-    .divider { width:78px; height:3px; background:linear-gradient(90deg,var(--c-primary),var(--c-gold),var(--c-red)); border-radius:2px; margin:0 auto 18px; }
-    .slogan { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; font-style:italic; color:rgba(255,255,255,.92); line-height:1.4; }
-    .slogan em { color:var(--c-gold); }
-
-    /* ════════════════════════════════════════════
-       3 — PHONES
-    ════════════════════════════════════════════ */
-    .phones { padding:16px 24px 45px; display:flex; justify-content:center; align-items:flex-end; gap:22px; flex-shrink:0; }
-    .pw { display:flex; flex-direction:column; align-items:center; gap:10px; }
-    .pw.center { margin-bottom:20px; }
-
-    .pf {
-      width:175px; height:350px; background:#111; border-radius:34px;
-      border:7px solid #2a2a2a; position:relative; overflow:hidden;
-      box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 24px 60px rgba(0,0,0,.6), 0 0 32px rgba(0,106,68,.22);
+    .app-sub {
+      font-size: 16px; color: rgba(255,255,255,.72);
+      margin-top: 10px; margin-bottom: 38px; font-weight: 500;
     }
-    .pw.center .pf {
-      width:205px; height:410px; border-radius:38px; border:8px solid #333;
-      box-shadow:0 0 0 1px rgba(255,255,255,.13), 0 32px 85px rgba(0,0,0,.7), 0 0 55px rgba(77,202,138,.32);
-    }
-    .notch { position:absolute; top:7px; left:50%; transform:translateX(-50%); width:38px; height:6px; background:#1c1c1c; border-radius:3px; z-index:5; }
 
-    .screen-img  { width:100%; height:100%; object-fit:cover; display:block; }
-    .screen-fb   {
-      width:100%; height:100%; display:none;
-      flex-direction:column; align-items:center; justify-content:center; gap:6px;
-      background:linear-gradient(160deg,#0d1f2d,#0a2416);
-      color:rgba(255,255,255,.3); font-size:8px; text-align:center; padding:10px;
+    /* phones */
+    .phones-row {
+      display: flex; align-items: flex-end; justify-content: center; gap: 18px;
+      width: 100%;
     }
-    .screen-fb span { font-size:22px; }
-    .plabel { font-size:10px; font-weight:600; color:rgba(255,255,255,.7); letter-spacing:.3px; }
+    .ph { display: flex; flex-direction: column; align-items: center; }
+    .ph-frame {
+      border-radius: 30px; overflow: hidden; position: relative;
+      box-shadow: 0 22px 60px rgba(0,0,0,.55);
+    }
+    .ph-frame.sm { width: 158px; height: 316px; border: 6px solid rgba(255,255,255,.22); }
+    .ph-frame.lg {
+      width: 190px; height: 380px; border: 7px solid rgba(255,255,255,.42);
+      box-shadow: 0 28px 80px rgba(0,0,0,.65), 0 0 50px rgba(255,255,255,.08);
+    }
+    .ph-notch {
+      position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      width: 34px; height: 5px; background: rgba(0,0,0,.45); border-radius: 3px; z-index: 5;
+    }
+    .ph-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ph-fb {
+      width: 100%; height: 100%; display: none;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #082010, #0a1e12); font-size: 32px;
+    }
 
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════
+       3 — TAGLINE
+    ══════════════════════════════════════════ */
+    .tagline-wrap {
+      background: #f2faf6;
+      padding: 30px 52px;
+      text-align: center;
+      border-bottom: 2px solid #d0ece0;
+    }
+    .tagline-text {
+      font-size: 21px; font-weight: 700; color: #0d2d1a; line-height: 1.5;
+    }
+    .tagline-text em { color: var(--c-primary, #006a44); font-style: normal; }
+
+    /* ══════════════════════════════════════════
+       PILL SECTION TITLE  (shared)
+    ══════════════════════════════════════════ */
+    .pill-row {
+      display: flex; justify-content: center;
+      padding: 30px 0 26px;
+    }
+    .pill-row span {
+      background: linear-gradient(90deg, var(--c-primary, #006a44), var(--c-accent, #00a865));
+      color: #fff; font-size: 17px; font-weight: 700;
+      padding: 11px 46px; border-radius: 44px;
+      box-shadow: 0 4px 18px rgba(0,106,68,.32);
+      letter-spacing: .3px;
+    }
+
+    /* ══════════════════════════════════════════
        4 — FEATURES
-    ════════════════════════════════════════════ */
-    .features { padding:0 38px 42px; flex-shrink:0; }
-    .sec-title { font-family:'Playfair Display',serif; font-size:30px; font-weight:700; color:#fff; margin-bottom:7px; }
-    .sec-title em { color:var(--c-accent); font-style:normal; }
-    .sec-bar { width:52px; height:3px; background:linear-gradient(90deg,var(--c-primary),var(--c-accent)); border-radius:2px; margin-bottom:20px; }
-    .fgrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .fc { background:var(--c-card); border:1px solid var(--c-border); border-radius:16px; padding:20px; display:flex; align-items:flex-start; gap:14px; }
-    .fi { width:48px; height:48px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
-    .fi-green  { background:rgba(0,106,68,.28);   border:1px solid rgba(0,106,68,.5); }
-    .fi-gold   { background:rgba(255,203,0,.14);   border:1px solid rgba(255,203,0,.3); }
-    .fi-red    { background:rgba(210,16,52,.18);   border:1px solid rgba(210,16,52,.4); }
-    .fi-blue   { background:rgba(30,120,200,.18);  border:1px solid rgba(30,120,200,.4); }
-    .fi-teal   { background:rgba(0,180,160,.18);   border:1px solid rgba(0,180,160,.4); }
-    .fi-purple { background:rgba(120,60,200,.18);  border:1px solid rgba(120,60,200,.4); }
-    .ft h4 { font-size:14px; font-weight:700; color:#fff; margin-bottom:5px; }
-    .ft p  { font-size:12px; color:var(--c-muted); line-height:1.5; }
-
-    /* ════════════════════════════════════════════
-       5 — STACK
-    ════════════════════════════════════════════ */
-    .stack { margin:0 38px 38px; background:var(--c-card); border:1px solid var(--c-border); border-radius:18px; padding:28px 26px; flex-shrink:0; }
-    .st-title { font-size:12px; font-weight:600; color:var(--c-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:18px; }
-    .pills { display:flex; flex-wrap:wrap; gap:12px; }
-    .pill { display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:10px 16px; }
-    .pill img { width:22px; height:22px; object-fit:contain; flex-shrink:0; }
-    .pill span { font-size:13px; font-weight:600; color:rgba(255,255,255,.85); }
-
-    /* ════════════════════════════════════════════
-       6 — TEAM + QR
-    ════════════════════════════════════════════ */
-    .team-row { margin:0 38px 38px; display:flex; align-items:stretch; gap:20px; flex-shrink:0; }
-    .team-card { flex:1; background:var(--c-card); border:1px solid var(--c-border); border-radius:18px; padding:26px 24px; }
-    .tl { font-size:12px; color:var(--c-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
-    .members { display:flex; flex-direction:column; gap:16px; }
-    .member { display:flex; align-items:center; gap:14px; }
-    .avatar {
-      width:48px; height:48px; border-radius:50%; flex-shrink:0;
-      background:linear-gradient(135deg,var(--c-primary),var(--c-accent));
-      display:flex; align-items:center; justify-content:center; font-size:20px;
-      border:2px solid rgba(77,202,138,.3);
+    ══════════════════════════════════════════ */
+    .features-wrap { background: #fff; padding: 0 52px 16px; }
+    .feat-item { display: flex; align-items: flex-start; gap: 22px; margin-bottom: 30px; }
+    .hex {
+      width: 62px; height: 62px; flex-shrink: 0;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center; font-size: 26px;
     }
-    .mi h4 { font-size:15px; font-weight:700; color:#fff; }
-    .mi p  { font-size:12px; color:var(--c-muted); }
-    .tmeta { margin-top:14px; font-size:11px; color:rgba(255,255,255,.32); line-height:1.8; }
+    .hex-g1 { background: linear-gradient(135deg, #006a44, #00a865); }
+    .hex-g2 { background: linear-gradient(135deg, #0055b3, #0099e6); }
+    .hex-g3 { background: linear-gradient(135deg, #a36a00, #ffcb00); }
+    .hex-g4 { background: linear-gradient(135deg, #7a2020, #d21034); }
+    .feat-text h4 {
+      font-size: 14px; font-weight: 800; color: #0d2d1a;
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+    }
+    .feat-text p { font-size: 13px; color: #4a6060; line-height: 1.6; }
 
-    .qr-box { background:#fff; border-radius:16px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:10px; flex-shrink:0; width:155px; justify-content:center; }
-    .qr-box img       { width:110px; height:110px; object-fit:contain; border-radius:6px; }
-    .qr-placeholder   { width:110px; height:110px; border-radius:6px; background:repeating-conic-gradient(#000 0% 25%,#fff 0% 50%) 0 0 / 8px 8px; opacity:.82; }
-    .qr-lbl { font-size:10px; font-weight:600; color:#333; text-align:center; line-height:1.4; }
+    /* ══════════════════════════════════════════
+       5 — TECH
+    ══════════════════════════════════════════ */
+    .tech-wrap {
+      background: #f5faf7;
+      padding: 0 52px 36px;
+      border-top: 2px solid #d8ede4;
+    }
+    .tech-logos {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 20px 28px;
+    }
+    .tech-item { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .tech-item img { width: 46px; height: 46px; object-fit: contain; }
+    .tech-item span { font-size: 11px; font-weight: 600; color: #3a5a4a; }
 
-    /* ════════════════════════════════════════════
-       7 — FOOTER
-    ════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════
+       6 — FOOTER
+    ══════════════════════════════════════════ */
     .footer {
-      margin-top:auto; background:rgba(0,0,0,.38);
-      border-top:1px solid var(--c-border);
-      padding:26px 38px;
-      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+      background: var(--c-primary, #006a44);
+      padding: 28px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px;
     }
-    .fl { display:flex; align-items:center; gap:11px; }
-    .flag { display:flex; flex-direction:column; width:22px; height:15px; border-radius:2px; overflow:hidden; flex-shrink:0; }
-    .fs { flex:1; }
-    .fg { background:#006a44; }  .fy { background:#ffcb00; }  .fr { background:#d21034; }
-    .ftxt { font-size:10px; color:var(--c-muted); line-height:1.55; }
-    .ftxt strong { color:rgba(255,255,255,.8); font-weight:600; }
-    .fright { font-size:10px; color:rgba(255,255,255,.28); text-align:right; }
+    .footer-left { display: flex; align-items: center; gap: 18px; flex: 1; }
+    .footer-logo { height: 58px; width: auto; object-fit: contain; filter: brightness(0) invert(1); flex-shrink: 0; }
+    .footer-tagline { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.45; }
+    .footer-tagline em { color: var(--c-gold, #ffcb00); font-style: normal; }
+    .footer-qr {
+      background: #fff; border-radius: 12px; padding: 12px 12px 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .footer-qr img { width: 86px; height: 86px; object-fit: contain; border-radius: 4px; }
+    .qr-ph { width: 86px; height: 86px; border-radius: 4px; background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 8px 8px; }
+    .footer-qr span { font-size: 9px; font-weight: 700; color: #333; text-align: center; line-height: 1.4; }
   </style>
 </head>
 <body>
-
 <div id="outer">
 <div id="kk-scale">
 
-  <!-- Décors fond -->
-  <div class="bg-layer"></div>
-  <div class="dots"></div>
-  <div class="deco" style="width:480px;height:480px;top:-90px;right:-140px;opacity:.35;"></div>
-  <div class="deco" style="width:280px;height:280px;top:620px;left:-70px;opacity:.2;"></div>
-  <div class="deco" style="width:380px;height:380px;bottom:210px;right:-90px;opacity:.17;"></div>
-  <!-- Bandes drapeau Togo -->
-  <div class="tg-stripe" style="top:112px;background:linear-gradient(90deg,#006a44,#ffcb00,#d21034);opacity:.65;"></div>
-  <div class="tg-stripe" style="bottom:56px;background:linear-gradient(90deg,#d21034,#ffcb00,#006a44);opacity:.42;"></div>
-
-  <div class="kk">
-
-    <!-- ═══ 1 — HEADER ══════════════════════════════════════════════ -->
-    <div class="header">
-      <img id="img-ecole" src="" alt="Logo école" />
-      <div class="h-text">
-        <div class="h-school" id="h-school"></div>
-        <div class="h-sub"    id="h-sub"></div>
+  <!-- 1 — HEADER -->
+  <div class="header">
+    <div class="hdr-left">
+      <div class="jpope-word">JPOPE</div>
+      <div class="hdr-sep"></div>
+      <div class="hdr-titles">
+        <div class="t1">Journées Portes Ouvertes</div>
+        <div class="t2">Projets Etudiants</div>
       </div>
-      <div class="h-badge">PPE — Projet Professionnel</div>
     </div>
+    <div class="hdr-right"><img id="hdr-logo" src="" alt="Logo école" /></div>
+  </div>
 
-    <!-- ═══ 2 — HERO ════════════════════════════════════════════════ -->
-    <div class="hero">
-      <div class="hero-row">
-        <div class="app-logo-box" id="app-logo-box"></div>
-        <div class="eyebrow"><div class="dot"></div>Application Mobile de Tourisme</div>
+  <!-- 2 — HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <div class="hero-logo-box" id="hero-logo"></div>
+        <div class="hero-badge" id="hero-badge"></div>
       </div>
-      <div class="app-name"  id="app-name"></div>
-      <div class="app-sub"   id="app-sub"></div>
-      <div class="divider"></div>
-      <div class="slogan"    id="slogan"></div>
-    </div>
-
-    <!-- ═══ 3 — PHONES ══════════════════════════════════════════════ -->
-    <div class="phones">
-
-      <!-- Phone gauche -->
-      <div class="pw">
-        <div class="pf">
-          <div class="notch"></div>
-          <img id="s1-img" class="screen-img" alt="" />
-          <div id="s1-fb" class="screen-fb" style="display:none;"><span>📱</span>Ajoutez screen1.jpeg</div>
-        </div>
-        <div class="plabel" id="s1-lbl"></div>
+      <div class="app-name" id="app-name"></div>
+      <div class="app-sub"  id="app-sub"></div>
+      <div class="phones-row">
+        <div class="ph"><div class="ph-frame sm"><div class="ph-notch"></div>
+          <img id="ph1-img" class="ph-img" alt="" />
+          <div id="ph1-fb" class="ph-fb" style="display:none;">📱</div>
+        </div></div>
+        <div class="ph"><div class="ph-frame lg"><div class="ph-notch"></div>
+          <img id="ph2-img" class="ph-img" alt="" />
+          <div id="ph2-fb" class="ph-fb" style="display:none;">📱</div>
+        </div></div>
+        <div class="ph"><div class="ph-frame sm"><div class="ph-notch"></div>
+          <img id="ph3-img" class="ph-img" alt="" />
+          <div id="ph3-fb" class="ph-fb" style="display:none;">📱</div>
+        </div></div>
       </div>
-
-      <!-- Phone centre (grand) -->
-      <div class="pw center">
-        <div class="pf">
-          <div class="notch"></div>
-          <img id="s2-img" class="screen-img" alt="" />
-          <div id="s2-fb" class="screen-fb" style="display:none;"><span>📱</span>Ajoutez screen2.jpeg</div>
-        </div>
-        <div class="plabel" id="s2-lbl"></div>
-      </div>
-
-      <!-- Phone droite -->
-      <div class="pw">
-        <div class="pf">
-          <div class="notch"></div>
-          <img id="s3-img" class="screen-img" alt="" />
-          <div id="s3-fb" class="screen-fb" style="display:none;"><span>📱</span>Ajoutez screen3.jpeg</div>
-        </div>
-        <div class="plabel" id="s3-lbl"></div>
-      </div>
-
     </div>
+  </div>
 
-    <!-- ═══ 4 — FONCTIONNALITÉS ═════════════════════════════════════ -->
-    <div class="features">
-      <div class="sec-title">Fonctionnalités <em>clés</em></div>
-      <div class="sec-bar"></div>
-      <div class="fgrid" id="fgrid"></div>
+  <!-- 3 — TAGLINE -->
+  <div class="tagline-wrap">
+    <div class="tagline-text" id="tagline"></div>
+  </div>
+
+  <!-- 4 — FEATURES -->
+  <div class="features-wrap">
+    <div class="pill-row"><span>Objectifs de la plateforme</span></div>
+    <div id="feat-list"></div>
+  </div>
+
+  <!-- 5 — TECH -->
+  <div class="tech-wrap">
+    <div class="pill-row"><span>Technologies utilisées</span></div>
+    <div class="tech-logos" id="tech-logos"></div>
+  </div>
+
+  <!-- 6 — FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      <img class="footer-logo" id="footer-logo" src="" alt="Logo" />
+      <div class="footer-tagline" id="footer-tagline"></div>
     </div>
+    <div class="footer-qr" id="footer-qr"></div>
+  </div>
 
-    <!-- ═══ 5 — STACK TECHNIQUE ═════════════════════════════════════ -->
-    <div class="stack">
-      <div class="st-title">Stack Technique</div>
-      <div class="pills" id="pills"></div>
-    </div>
-
-    <!-- ═══ 6 — ÉQUIPE + QR ═════════════════════════════════════════ -->
-    <div class="team-row">
-      <div class="team-card">
-        <div class="tl">Réalisé par</div>
-        <div class="members" id="members"></div>
-        <div class="tmeta"   id="tmeta"></div>
-      </div>
-      <div class="qr-box" id="qr-box"></div>
-    </div>
-
-    <!-- ═══ 7 — FOOTER ══════════════════════════════════════════════ -->
-    <div class="footer">
-      <div class="fl">
-        <div id="ft-logo-app" style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;display:none;">
-          <img id="ft-logo-img" style="width:100%;height:100%;object-fit:cover;display:block;" alt="logo" />
-        </div>
-        <div class="ftxt"><strong id="ft-app"></strong><br/><span id="ft-ecole"></span></div>
-      </div>
-      <div class="fright" id="ft-right"></div>
-    </div>
-
-  </div><!-- .kk -->
 </div><!-- #kk-scale -->
 </div><!-- #outer -->
 
-<!-- ╔══════════════════════════════════════════════════════════════╗
-     ║  ⚙️  NE PAS MODIFIER — Injection config + mise à l'échelle  ║
-     ╚══════════════════════════════════════════════════════════════╝ -->
 <script>
-/* ── Couleurs CSS depuis config ─────────────────────────── */
+/* ── Couleurs CSS ── */
 var r = document.documentElement.style;
 r.setProperty('--c-primary', CFG.colors.primary);
 r.setProperty('--c-accent',  CFG.colors.accent);
 r.setProperty('--c-gold',    CFG.colors.gold);
 r.setProperty('--c-red',     CFG.colors.red);
+r.setProperty('--hero-bg',   CFG.colors.hero_bg  || 'linear-gradient(150deg,#00391f 0%,#005530 45%,#006a44 100%)');
 
-/* ── École ─────────────────────────────────────────────── */
-document.getElementById('img-ecole').src = CFG.logo_ecole;
-document.getElementById('h-school').textContent = CFG.ecole;
-document.getElementById('h-sub').innerHTML = CFG.filiere + ' &nbsp;|&nbsp; ' + CFG.promo;
+/* ── Header ── */
+document.getElementById('hdr-logo').src = CFG.logo_ecole;
 
-/* ── App hero ───────────────────────────────────────────── */
-var lbox = document.getElementById('app-logo-box');
-if (CFG.logo_app) {
-  lbox.innerHTML = '<img src="' + CFG.logo_app + '" alt="Logo" />';
-} else {
-  lbox.textContent = '🌍';
-}
-document.getElementById('app-name').textContent = CFG.app_name;
-document.getElementById('app-sub').innerHTML    = CFG.app_subtitle;
-document.getElementById('slogan').innerHTML     =
-  '"' + CFG.slogan_l1 + '<br/><em>' + CFG.slogan_l2 + '</em>"';
+/* ── Hero ── */
+var hlb = document.getElementById('hero-logo');
+hlb.innerHTML = CFG.logo_app
+  ? '<img src="' + CFG.logo_app + '" alt="logo" />'
+  : '<span style="font-size:30px">🌍</span>';
+document.getElementById('hero-badge').textContent = CFG.hero_tag;
+document.getElementById('app-name').textContent   = CFG.app_name;
+document.getElementById('app-sub').textContent    = CFG.app_subtitle;
 
-/* ── Screenshots ────────────────────────────────────────── */
+/* ── Phones ── */
 [
-  { img:'s1-img', fb:'s1-fb', lbl:'s1-lbl', src:CFG.screen1_src, label:CFG.screen1_label },
-  { img:'s2-img', fb:'s2-fb', lbl:'s2-lbl', src:CFG.screen2_src, label:CFG.screen2_label },
-  { img:'s3-img', fb:'s3-fb', lbl:'s3-lbl', src:CFG.screen3_src, label:CFG.screen3_label },
+  { img:'ph1-img', fb:'ph1-fb', src:CFG.screen1_src },
+  { img:'ph2-img', fb:'ph2-fb', src:CFG.screen2_src },
+  { img:'ph3-img', fb:'ph3-fb', src:CFG.screen3_src },
 ].forEach(function(s) {
-  var el = document.getElementById(s.img);
-  var fb = document.getElementById(s.fb);
-  document.getElementById(s.lbl).textContent = s.label;
-  // Réinitialise l'affichage
-  el.style.display = 'block';
-  fb.style.display  = 'none';
-  // onerror AVANT src pour ne rien manquer
-  el.onerror = function() {
-    el.style.display = 'none';
-    fb.style.display  = 'flex';
-  };
-  el.src = s.src;
+  var img = document.getElementById(s.img);
+  var fb  = document.getElementById(s.fb);
+  img.onerror = function() { img.style.display='none'; fb.style.display='flex'; };
+  img.src = s.src;
 });
 
-/* ── Fonctionnalités ────────────────────────────────────── */
-var grid = document.getElementById('fgrid');
-CFG.features.forEach(function(f) {
-  grid.innerHTML +=
-    '<div class="fc">' +
-      '<div class="fi ' + f.color + '">' + f.icon + '</div>' +
-      '<div class="ft"><h4>' + f.titre + '</h4><p>' + f.desc + '</p></div>' +
+/* ── Features ── */
+var hexMap = ['hex-g1','hex-g2','hex-g3','hex-g4'];
+var fl = document.getElementById('feat-list');
+CFG.features.forEach(function(f, i) {
+  fl.innerHTML +=
+    '<div class="feat-item">' +
+      '<div class="hex ' + (f.hexClass || hexMap[i % 4]) + '">' + f.icon + '</div>' +
+      '<div class="feat-text"><h4>' + f.titre + '</h4><p>' + f.desc + '</p></div>' +
     '</div>';
 });
 
-/* ── Stack ──────────────────────────────────────────────── */
-var pills = document.getElementById('pills');
+/* ── Tech ── */
+var tl = document.getElementById('tech-logos');
 CFG.stack.forEach(function(s) {
-  pills.innerHTML +=
-    '<div class="pill">' +
-      '<img src="' + s.icon + '" alt="' + s.label + '" />' +
-      '<span>' + s.label + '</span>' +
-    '</div>';
+  tl.innerHTML +=
+    '<div class="tech-item"><img src="' + s.icon + '" alt="' + s.label + '" /><span>' + s.label + '</span></div>';
 });
 
-/* ── Équipe ─────────────────────────────────────────────── */
-var members = document.getElementById('members');
-[{ nom:CFG.dev1_nom, role:CFG.dev1_role }, { nom:CFG.dev2_nom, role:CFG.dev2_role }]
-.forEach(function(m) {
-  members.innerHTML +=
-    '<div class="member">' +
-      '<div class="avatar">👤</div>' +
-      '<div class="mi"><h4>' + m.nom + '</h4><p>' + m.role + '</p></div>' +
-    '</div>';
-});
-document.getElementById('tmeta').innerHTML =
-  'Flutter &bull; Django REST &bull; PostgreSQL<br/>Encadrant : ' + CFG.encadrant;
+/* ── Footer ── */
+document.getElementById('footer-logo').src = CFG.logo_ecole;
+document.getElementById('footer-tagline').innerHTML = CFG.footer_tagline;
+var fqr = document.getElementById('footer-qr');
+fqr.innerHTML = CFG.qr_src
+  ? '<img src="' + CFG.qr_src + '" alt="QR" /><span>' + CFG.qr_label + '</span>'
+  : '<div class="qr-ph"></div><span>' + CFG.qr_label + '</span>';
 
-/* ── QR ─────────────────────────────────────────────────── */
-var qrb = document.getElementById('qr-box');
-qrb.innerHTML = CFG.qr_src
-  ? '<img src="' + CFG.qr_src + '" alt="QR" /><div class="qr-lbl">' + CFG.qr_label + '</div>'
-  : '<div class="qr-placeholder"></div><div class="qr-lbl">' + CFG.qr_label + '</div>';
-
-/* ── Footer ─────────────────────────────────────────────── */
-document.getElementById('ft-app').textContent   = CFG.app_name + ' Tourism';
-if (CFG.logo_app) {
-  var ftLogo = document.getElementById('ft-logo-app');
-  document.getElementById('ft-logo-img').src = CFG.logo_app;
-  ftLogo.style.display = 'block';
-}
-document.getElementById('ft-ecole').textContent = 'Projet de fin de licence — ' + CFG.ecole;
-document.getElementById('ft-right').innerHTML   = 'Année académique ' + CFG.annee + '<br/>' + CFG.filiere;
-
-/* ── Mise à l'échelle plein écran ───────────────────────── */
+/* ── Scale plein écran ── */
 function scale() {
   var el = document.getElementById('kk-scale');
   var s  = Math.min(window.innerWidth / 800, window.innerHeight / 2000) * 0.98;

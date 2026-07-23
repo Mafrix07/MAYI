@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import '../main.dart';
@@ -82,29 +83,53 @@ class ApiService {
 
   // ── Upload multipart ───────────────────────────────────────────────────
   static Future<http.Response> uploadFile(
-      String endpoint, String fieldName, {String? filePath, Uint8List? bytes, String? fileName}) async {
+      String endpoint, String fieldName,
+      {String? filePath,
+      Uint8List? bytes,
+      String? fileName,
+      String method = 'POST',
+      Map<String, String>? extraFields}) async {
     final token = await _storage.read(key: 'token');
     final uri = Uri.parse('$baseUrl$endpoint');
-    final request = http.MultipartRequest('POST', uri);
+    final request = http.MultipartRequest(method, uri);
 
     if (token != null) {
       request.headers['Authorization'] = 'Bearer $token';
     }
 
+    if (extraFields != null) {
+      request.fields.addAll(extraFields);
+    }
+
     if (bytes != null) {
-      // Prefer bytes — works on all platforms including Android content:// URIs
       request.files.add(http.MultipartFile.fromBytes(
         fieldName,
         bytes,
         filename: fileName ?? 'upload.jpg',
+        contentType: _mimeTypeOf(fileName ?? 'upload.jpg'),
       ));
     } else if (filePath != null) {
-      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      request.files.add(await http.MultipartFile.fromPath(
+        fieldName,
+        filePath,
+        contentType: _mimeTypeOf(filePath),
+      ));
     }
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
     return _handleResponse(response);
+  }
+
+  static MediaType _mimeTypeOf(String filename) {
+    final ext = filename.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'png':  return MediaType('image', 'png');
+      case 'gif':  return MediaType('image', 'gif');
+      case 'webp': return MediaType('image', 'webp');
+      case 'heic': return MediaType('image', 'heic');
+      default:     return MediaType('image', 'jpeg');
+    }
   }
 
   // ── Gestion centralisée des réponses ──────────────────────────────────────

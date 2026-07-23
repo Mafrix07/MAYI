@@ -166,9 +166,12 @@ class _ProfilProScreenState extends State<ProfilProScreen> {
                           final ok = await auth.uploadProfilePhoto(xFile);
                           if (!mounted) return;
                           messenger.showSnackBar(SnackBar(
-                            content: Text(ok ? 'Photo mise à jour !' : 'Erreur upload, réessayez.'),
+                            content: Text(ok
+                                ? 'Photo mise à jour !'
+                                : auth.uploadError ?? 'Erreur upload, réessayez.'),
                             backgroundColor: ok ? AppColors.secondary : Colors.redAccent,
                             behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 6),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ));
                         },

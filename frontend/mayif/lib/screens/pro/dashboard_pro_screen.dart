@@ -61,7 +61,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
               title: Text('Espace Professionnel',
                   style: GoogleFonts.playfairDisplay(
                       fontWeight: FontWeight.bold,
-                      color: context.primaryText)),
+                      color: Colors.white)),
               actions: [
                 Consumer<ThemeProvider>(
                   builder: (context, themeProvider, _) => IconButton(
@@ -119,7 +119,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           Text(
                             '${user?.firstName ?? ''} ${user?.lastName ?? user?.username ?? ''} 👋',
                             style: GoogleFonts.playfairDisplay(
-                              color: context.primaryText,
+                              color: Colors.white,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
@@ -128,7 +128,7 @@ class _DashboardProScreenState extends State<DashboardProScreen> {
                           Text(
                             'Établissement : ${(() { final n = (user?.profilProfessionnel?['nom_entreprise'] as String?)?.trim(); return (n != null && n.isNotEmpty) ? n : 'Non renseigné'; })()}',
                             style: TextStyle(
-                                color: context.secondaryText, fontSize: 14),
+                                color: Colors.white.withValues(alpha: 0.75), fontSize: 14),
                           ),
                         ],
                       ),

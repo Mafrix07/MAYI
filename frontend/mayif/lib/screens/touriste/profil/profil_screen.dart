@@ -316,15 +316,21 @@ class _ProfilScreenState extends State<ProfilScreen> {
 
   Future<void> _pickAndUploadImage(BuildContext context, AuthProvider auth) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final success = await auth.uploadProfilePhoto(image);
-      if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photo mise à jour !'), backgroundColor: AppColors.primary),
-        );
-      }
-    }
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (image == null) return;
+    final success = await auth.uploadProfilePhoto(image);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success
+            ? 'Photo mise à jour !'
+            : auth.uploadError ?? 'Erreur upload, réessayez.'),
+        backgroundColor: success ? AppColors.primary : Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override

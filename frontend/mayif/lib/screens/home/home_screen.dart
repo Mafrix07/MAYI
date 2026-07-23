@@ -16,6 +16,7 @@ import '../touriste/profil/profil_screen.dart';
 import '../services/service_detail_screen.dart';
 import '../recherche/search_screen.dart';
 import '../favoris/favoris_screen.dart';
+import '../chatbot/chatbot_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,6 +53,47 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       extendBody: true,
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.pushNamed(context, '/chatbot'),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              label: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.secondary, AppColors.accent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.45),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'MayiBot IA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: GlassCard(
@@ -458,6 +500,65 @@ class _HomeContentState extends State<HomeContent> {
                       ),
                     ),
                   ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.15),
+
+                  const SizedBox(height: 16),
+
+                  // ── Bannière MayiBot IA ───────────────────────────────
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1A5C2E), Color(0xFF0EA5C5)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.25),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MayiBot — Assistant IA',
+                                  style: GoogleFonts.playfairDisplay(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Identifiez un site et obtenez itinéraire, hôtels, restos',
+                                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
 
                   const SizedBox(height: 24),
 
